@@ -1,0 +1,30 @@
+{
+  "name": "docubot",
+  "version": "1.0.0",
+  "description": "A handy little documenting bot for your code",
+  "main": "index.js",
+  "scripts": {
+    "docubot": "node ./src/docubot.js",
+    "pinecone": "node ./src/pinecone.js"
+  },
+  "bin": {
+    "docubot": "./bin/docubot.js",
+    "pinecone": "./bin/pinecone.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Answers-AI/docubot.git"
+  },
+  "author": "Brad Taylor brad@theanswer.ai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Answers-AI/docubot/issues"
+  },
+  "homepage": "https://github.com/Answers-AI/docubot#readme",
+  "dependencies": {
+    "@pinecone-database/pinecone": "^0.0.12",
+    "dotenv": "^16.0.3",
+    "gpt3-tokenizer": "^1.1.5",
+    "openai": "^3.2.1"
+  }  
+}
