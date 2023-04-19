@@ -35,7 +35,7 @@ const {
 
 function copyFolderSync(src, dest) {
   if (!fs.existsSync(dest)) {
-    fs.mkdirSync(dest);
+    fs.mkdirSync(dest, { recursive: true });
   }
   const entries = fs.readdirSync(src, { withFileTypes: true });
   for (const entry of entries) {
