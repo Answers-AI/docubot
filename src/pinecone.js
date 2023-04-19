@@ -61,8 +61,7 @@ async function main() {
     let index;
     const existingIndexes = await client.listIndexes();
     if (existingIndexes.includes(indexName)) {
-      console.log(`Index "${indexName}" already exists. Deleting all content.`);
-      // Delete all content in the index
+      console.log(`Index "${indexName}" already exists.`);
       index = client.Index(indexName);
     } else {
       // Create a new index if it doesn't exist
@@ -91,48 +90,64 @@ async function main() {
   }
 }
 
-async function processMarkdownFiles(folderPath, index) {
+async function getAllFiles(folderPath, fileList = []) {
   const files = fs.readdirSync(folderPath);
-  console.log(`Processing markdown files: ${files}`);
+
   for (const file of files) {
     const filePath = path.join(folderPath, file);
     const fileStats = fs.statSync(filePath);
 
-    const relativeFilePath = path
-      .relative(MARKDOWN_DIRECTORY, filePath)
-      .replace(".md", "");
-    const fullCodePath = path.join(CODE_BASE_PATH, relativeFilePath);
-    console.log(`Processing file: ${relativeFilePath}`);
-
     if (fileStats.isDirectory()) {
-      await processMarkdownFiles(MARKDOWN_DIRECTORY, index); // Recursively process subfolders
+      await getAllFiles(filePath, fileList);
     } else if (path.extname(file) === ".md") {
+      fileList.push(filePath);
+    }
+  }
+
+  return fileList;
+}
+
+async function processEmbeddings(files) {
+  const fileBatches = [];
+  while (files.length) {
+    fileBatches.push(files.splice(0, 50));
+  }
+
+  const embeddingBatches = await Promise.all(
+    fileBatches.map(async (batch) => {
+      const embeddings = await Promise.all(
+        batch.map(async (filePath) => {
+          const content = fs.readFileSync(filePath, "utf-8");
+          const response = await openai.createEmbedding({
+            model: "text-embedding-ada-002",
+            input: content,
+          });
+
+          return {
+            filePath,
+            embedding: response.data.data[0].embedding,
+          };
+        })
+      );
+
+      return embeddings;
+    })
+  );
+
+  return embeddingBatches.flat();
+}
+
+async function upsertEmbeddingsToPinecone(embeddings, index) {
+  await Promise.all(
+    embeddings.map(async ({ filePath, embedding }) => {
+      const relativeFilePath = path
+        .relative(MARKDOWN_DIRECTORY, filePath)
+        .replace(".md", "");
+      const fullCodePath = path.join(CODE_BASE_PATH, relativeFilePath);
       const content = fs.readFileSync(filePath, "utf-8");
       const codeContent = fs.readFileSync(fullCodePath, "utf-8");
-
-      // console.log("codeContent", codeContent);
       const tokens = tokenizer.encode(content).bpe;
 
-      // Check if the RUN_GPT environment variable is set
-
-      const response = await openai.createEmbedding({
-        model: "text-embedding-ada-002",
-        input: content,
-      });
-
-      // Check if the response has the correct structure
-      if (
-        !response ||
-        !response.data ||
-        !response.data.data ||
-        !response.data.data[0] ||
-        !response.data.data[0].embedding
-      ) {
-        console.error("Unexpected response from the OpenAI API:", response);
-        continue;
-      }
-
-      const embedding = response.data.data[0].embedding;
       const vectorId = `docubot_${PINECONE_NAMESPACE}_${relativeFilePath.replace(
         /\//g,
         "_"
@@ -148,7 +163,7 @@ async function processMarkdownFiles(folderPath, index) {
                 text: content,
                 tokens: tokens.length,
                 filePath: relativeFilePath,
-                datasource: "answers-ALPHA42",
+                datasource: "docubot",
                 code: codeContent,
               },
             },
@@ -158,11 +173,29 @@ async function processMarkdownFiles(folderPath, index) {
       });
 
       console.log(`Upserted vector: ${vectorId}`);
-    }
-  }
+    })
+  );
 }
 
-module.exports = main().catch((error) => {
-  console.error("Error Indexing in Pinecone:", error);
-  console.error("Error Response:", error?.response?.data);
-});
+
+async function processMarkdownFiles(folderPath, index) {
+  const files = await getAllFiles(folderPath);
+  console.log(`Processing markdown files: ${files}`);
+
+  const embeddings = await processEmbeddings(files);
+  console.log("Embeddings processed successfully");
+
+  await upsertEmbeddingsToPinecone(embeddings, index);
+  console.log("Embeddings upserted to Pinecone successfully");
+}
+
+
+if (require.main === module) {
+  main().catch((error) => {
+    console.error("Error Indexing in Pinecone:", error);
+    console.error("Error Response:", error?.response?.data);
+  });
+}
+module.exports = {
+  main,
+}

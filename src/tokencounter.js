@@ -25,7 +25,7 @@ function isValidFileName(filename) {
 
 async function countTokensRecursively(directory) {
   console.log("Processing directory:", directory);
-  console.log("Configuration file path:", config);
+  console.log("Configuration file path:", localConfigPath);
 
   const tokenCounts = {};
   let totalTokens = 0;

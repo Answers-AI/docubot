@@ -4,12 +4,11 @@
   "description": "A handy little documenting bot for your code",
   "main": "index.js",
   "scripts": {
-    "docubot": "node ./src/docubot.js",
-    "pinecone": "node ./src/pinecone.js"
+    "docubot": "node ./index.js",
+    "test": "jest"
   },
   "bin": {
-    "docubot": "./bin/docubot.js",
-    "pinecone": "./bin/pinecone.js"
+    "docubot": "./index.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +24,10 @@
     "@pinecone-database/pinecone": "^0.0.12",
     "dotenv": "^16.0.3",
     "gpt3-tokenizer": "^1.1.5",
-    "openai": "^3.2.1"
-  }  
+    "openai": "^3.2.1",
+    "yargs": "^17.7.1"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
+  }
 }

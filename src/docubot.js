@@ -1,6 +1,15 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
+// Copy the config file to the local project if it does not exist
+const localConfigPath = path.join(process.cwd(), ".docubotrc");
+const defaultConfigPath = path.join(__dirname, ".docubotrc");
+
+if (!fs.existsSync(localConfigPath)) {
+  fs.copyFileSync(defaultConfigPath, localConfigPath);
+}
+
+
 const GPT3Tokenizer = require("gpt3-tokenizer").default;
 const dotenv = require("dotenv");
 const { Configuration, OpenAIApi } = require("openai");
@@ -9,13 +18,7 @@ const readline = require("readline");
 
 dotenv.config();
 
-// Copy the config file to the local project if it does not exist
-const localConfigPath = path.join(process.cwd(), ".docubotrc");
-const defaultConfigPath = path.join(__dirname, ".docubotrc");
 
-if (!fs.existsSync(localConfigPath)) {
-  fs.copyFileSync(defaultConfigPath, localConfigPath);
-}
 
 const config = require(localConfigPath);
 
@@ -27,13 +30,8 @@ const {
   PROMPT_TYPE_CONDITIONS,
   PROMPTS_FILE_PATH,
   TEMPLATE_FILE_PATH,
+  DOCUBOT_DIRECTORY,
 } = config;
-
-// Create the 'docubot' folder the first time the script is run
-const DOCUBOT_DIRECTORY = path.join(process.cwd(), "docubot");
-if (!fs.existsSync(DOCUBOT_DIRECTORY)) {
-  fs.mkdirSync(DOCUBOT_DIRECTORY);
-}
 
 function copyFolderSync(src, dest) {
   if (!fs.existsSync(dest)) {
@@ -86,11 +84,11 @@ function getFilenameFromPath(path) {
 }
 
 // TODO: Need to do a better job about estimating the pricing
-const getEstimatedPricing = async (sortedTokenCounts) => {
+const getEstimatedPricing = async (sortedFilePathsByTokenCount) => {
   let gpt3Tokens = 0;
   let gpt4Tokens = 0;
 
-  for (const [filePath, fileTokens] of sortedTokenCounts) {
+  for (const [filePath, fileTokens] of sortedFilePathsByTokenCount) {
     if (fileTokens > 3800) {
       gpt4Tokens += fileTokens;
       console.warn(
@@ -119,21 +117,26 @@ const getEstimatedPricing = async (sortedTokenCounts) => {
   );
 };
 
-async function main() {
+async function main(filePath) {
   console.log("Running GPT-3 on codebase...");
   console.log("CODE_BASE_PATH: ", CODE_BASE_PATH);
   console.log("Counting Tokens .....");
-  const { tokenCounts, totalTokens } = await countTokensRecursively(
-    CODE_BASE_PATH
-  );
+  
   console.log("Done counting tokens");
+  let sortedFilePathsByTokenCount;
+  if(filePath) {
+    sortedFilePathsByTokenCount = [[filePath, 100]]
+  } else {
+    const { tokenCounts, totalTokens } = await countTokensRecursively(
+      CODE_BASE_PATH
+    );
+    sortedFilePathsByTokenCount = Object.entries(tokenCounts).sort(
+      ([, a], [, b]) => a - b
+    );
+  }
 
-  const sortedTokenCounts = Object.entries(tokenCounts).sort(
-    ([, a], [, b]) => a - b
-  );
-
-  // console.log("sortedTokenCounts", sortedTokenCounts)
-  getEstimatedPricing(sortedTokenCounts);
+  // console.log("sortedFilePathsByTokenCount", sortedFilePathsByTokenCount)
+  getEstimatedPricing(sortedFilePathsByTokenCount);
 
   // Ask the user if they want to create markdown files
   const createMarkdownFiles = await promptUser(
@@ -148,8 +151,8 @@ async function main() {
     let gpt4Tokens = 0;
 
     const batchSize = 10;
-    for (let i = 0; i < sortedTokenCounts.length; i += batchSize) {
-      const batch = sortedTokenCounts.slice(i, i + batchSize);
+    for (let i = 0; i < sortedFilePathsByTokenCount.length; i += batchSize) {
+      const batch = sortedFilePathsByTokenCount.slice(i, i + batchSize);
       const batchResults = await Promise.all(
         batch.map(([filePath]) => processFile(filePath))
       );
@@ -270,8 +273,16 @@ async function promptUser(question) {
   });
 }
 
-module.exports = main().catch((error) => {
-  console.error("Error:", error);
-  console.error("Error Response:", error?.response?.data);
-});
+module.exports = {
+  main,
+  getFilenameFromPath,
+  getEstimatedPricing,
+  getPromptType,
+  getPromptAndExample,
+  processFile,
+  copyFolderSync,
+};
 
+if (require.main === module) {
+  main();
+}
