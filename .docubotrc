@@ -3,8 +3,8 @@ dotenv.config();
 const path = require("path");
 
 const CODE_BASE_PATH = process.env.CODE_BASE_PATH || process.cwd();
-const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME || "docubot";
-const PINECONE_NAMESPACE = process.env.PINECONE_NAMESPACE || "default";
+const PINECONE_INDEX_NAME = process.env.DOCUBOT_PINECONE_INDEX_NAME || "docubot";
+const PINECONE_NAMESPACE = process.env.DOCUBOT_PINECONE_NAMESPACE || "default";
 const DOCUBOT_DIRECTORY_NAME = process.env.DOCUBOT_DIRECTORY_NAME || "docubot";
 const DOCUBOT_DIRECTORY = path.join(CODE_BASE_PATH, DOCUBOT_DIRECTORY_NAME);
 const MARKDOWN_DIRECTORY = 
@@ -158,4 +158,5 @@ module.exports = {
   PINECONE_INDEX_NAME,
   PINECONE_NAMESPACE,
   MARKDOWN_DIRECTORY,
+  DOCUBOT_DIRECTORY_NAME,
 };

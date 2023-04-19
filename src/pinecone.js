@@ -24,7 +24,10 @@ const {
   CODE_BASE_PATH,
   PINECONE_INDEX_NAME,
   PINECONE_NAMESPACE,
+  PACKAGE_JSON_PATH,
 } = config;
+
+const packageJson = require(path.join(CODE_BASE_PATH, 'package.json'));
 
 // Create the 'docubot' folder the first time the script is run
 const docubotDirectory = path.join(process.cwd(), "docubot");
@@ -138,21 +141,24 @@ async function processEmbeddings(files) {
 }
 
 async function upsertEmbeddingsToPinecone(embeddings, index) {
+  console.log("Upserting embeddings to Pinecone...");
   await Promise.all(
     embeddings.map(async ({ filePath, embedding }) => {
       const relativeFilePath = path
         .relative(MARKDOWN_DIRECTORY, filePath)
         .replace(".md", "");
       const fullCodePath = path.join(CODE_BASE_PATH, relativeFilePath);
+      
+      
       const content = fs.readFileSync(filePath, "utf-8");
       const codeContent = fs.readFileSync(fullCodePath, "utf-8");
       const tokens = tokenizer.encode(content).bpe;
 
-      const vectorId = `docubot_${PINECONE_NAMESPACE}_${relativeFilePath.replace(
+      const vectorId = `docubot_${packageJson.name}_v${packageJson.version}_${relativeFilePath.replace(
         /\//g,
         "_"
       )}`;
-
+      
       await index.upsert({
         upsertRequest: {
           vectors: [
@@ -163,18 +169,24 @@ async function upsertEmbeddingsToPinecone(embeddings, index) {
                 text: content,
                 tokens: tokens.length,
                 filePath: relativeFilePath,
-                datasource: "docubot",
+                datasource: `docubot-${packageJson.name}-v${packageJson.version}`,
                 code: codeContent,
               },
             },
           ],
           namespace: PINECONE_NAMESPACE,
         },
+      }).catch((error) => {
+        console.error("Error upserting embeddings to Pinecone:", error);
+        console.error("Error Response:", error?.response?.data);
       });
 
-      console.log(`Upserted vector: ${vectorId}`);
+      console.log(`Upserted vector: ${vectorId} with datasource 'docubot-${packageJson.name}-v${packageJson.version}'`);
     })
-  );
+  ).catch((error) => {
+    console.error("Error upserting embeddings to Pinecone:", error);
+    console.error("Error Response:", error?.response?.data);
+  });
 }
 
 

@@ -31,6 +31,7 @@ const {
   PROMPTS_FILE_PATH,
   TEMPLATE_FILE_PATH,
   DOCUBOT_DIRECTORY,
+  DOCUBOT_DIRECTORY_NAME,
 } = config;
 
 function copyFolderSync(src, dest) {
@@ -49,20 +50,24 @@ function copyFolderSync(src, dest) {
   }
 }
 
+console.log("CODE_BASE_PATH: ", CODE_BASE_PATH);
+console.log("DOCUBOT_DIRECTORY_NAME: ", DOCUBOT_DIRECTORY_NAME);
 // Check if the prompts folder exists and copy it over if it doesn't
-const localPromptsPath = path.join(DOCUBOT_DIRECTORY, "prompts");
-const packagePromptsPath = path.join(__dirname, "prompts");
+const localPromptsPath = path.join(CODE_BASE_PATH, DOCUBOT_DIRECTORY_NAME, "prompts");
+const packagePromptsPath = path.join(__dirname, "prompts"); // Correct path to the prompts directory
+console.log("packagePromptsPath: ", packagePromptsPath);
+console.log("localPromptsPath: ", localPromptsPath);
 if (!fs.existsSync(localPromptsPath)) {
   copyFolderSync(packagePromptsPath, localPromptsPath);
 }
 
-// Check if the templates folder exists and copy it over if it doesn't
-const localTemplatesPath = path.join(DOCUBOT_DIRECTORY, "templates");
-const packageTemplatesPath = path.join(__dirname, "templates");
+
+// Similar update for the templates directory
+const localTemplatesPath = path.join(CODE_BASE_PATH, DOCUBOT_DIRECTORY_NAME, "templates");
+const packageTemplatesPath = path.join(__dirname, "templates"); // Correct path to the templates directory
 if (!fs.existsSync(localTemplatesPath)) {
   copyFolderSync(packageTemplatesPath, localTemplatesPath);
 }
-
 const tokenizer = new GPT3Tokenizer({ type: "gpt3" });
 const RUN_GPT = process.env.RUN_GPT || false;
 
