@@ -25,42 +25,48 @@ function isValidFileName(filename) {
 
 async function countTokensRecursively(directory) {
   console.log("Processing directory:", directory);
-  console.log("Configuration file path:", localConfigPath);
+  // console.log("Configuration file path:", localConfigPath);
 
   const tokenCounts = {};
   let totalTokens = 0;
 
   // Check if the current directory is in the INVALID_PATHS array
   if (INVALID_PATHS.some((invalidPath) => directory.includes(invalidPath))) {
-    console.log("Skipping invalid directory:", directory);
+    // console.log("Skipping invalid directory:", directory);
     return { tokenCounts, totalTokens };
   }
 
-  console.log("Reading directory entries:", directory);
+  // console.log("Reading directory entries:", directory);
   const entries = await fs.promises.readdir(directory, { withFileTypes: true });
 
   for (const entry of entries) {
     const fullPath = path.join(directory, entry.name);
 
     if (entry.isDirectory()) {
-      console.log("Processing subdirectory:", fullPath);
+      // console.log("Processing subdirectory:", fullPath);
       const { tokenCounts: subdirTokenCounts, totalTokens: subdirTotalTokens } =
         await countTokensRecursively(fullPath);
       Object.assign(tokenCounts, subdirTokenCounts);
       totalTokens += subdirTotalTokens;
-      console.log("Finished processing subdirectory:", fullPath);
+      // console.log("Finished processing subdirectory:", fullPath);
     } else if (
       entry.isFile() &&
       isValidFileType(entry.name) &&
       isValidFileName(entry.name)
     ) {
-      console.log("Processing file:", fullPath);
+      // console.log("Processing file:", fullPath);
       const content = await fs.promises.readFile(fullPath, "utf8");
       const encoded = tokenizer.encode(content);
       const tokensInFile = encoded.bpe.length;
-      tokenCounts[fullPath] = tokensInFile;
-      totalTokens += tokensInFile;
-      console.log("Processed file:", fullPath, "with", tokensInFile, "tokens.");
+      if(tokensInFile < 32000) {
+        tokenCounts[fullPath] = tokensInFile;
+        totalTokens += tokensInFile;
+        console.log("Counted Tokens for file:", fullPath, "with", tokensInFile, "tokens.");
+      } else {
+        console.log("Skipping file:", fullPath, "with", tokensInFile, "tokens.");
+      }
+      
+      
     }
   }
 
