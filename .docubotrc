@@ -15,7 +15,8 @@ const PROMPTS_FILE_PATH =
 const TEMPLATE_FILE_PATH =
     process.env.TEMPLATE_FILE_PATH || path.join(DOCUBOT_DIRECTORY, "templates");
   
-const DOCS_FILE_TYPES = [".md", ".mdx", ".txt"];
+const DOCS_FILE_TYPES = [".md", ".mdx", ".txt", "LICENSE.md",
+"LICENSE"];
 const CONFIG_FILE_TYPES = [
   ".json",
   ".yaml",
@@ -106,8 +107,6 @@ const INVALID_FILE_NAMES = [
   "pnpm-lock.yaml",
   "package-lock.json",
   "app_pairs.yml",
-  "LICENSE.md",
-  "LICENSE",
   ".env",
 ];
 
@@ -126,6 +125,7 @@ const PROMPT_TYPE_CONDITIONS = {
   },
   docs: {
     fileExt: DOCS_FILE_TYPES,
+    pathIncludes: DOCS_FILE_TYPES
   },
   default: {},
 };
@@ -159,4 +159,5 @@ module.exports = {
   PINECONE_NAMESPACE,
   MARKDOWN_DIRECTORY,
   DOCUBOT_DIRECTORY_NAME,
+  DOCS_FILE_TYPES,
 };

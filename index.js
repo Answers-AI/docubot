@@ -18,13 +18,18 @@ if (require.main === module) {
         yargs.positional("file", {
           describe: "Path to the file to be documented",
           type: "string",
+        }).option("full", {
+          alias: "f",
+          description: "Run the full process on all files",
+          type: "boolean",
         });
       },
       async (argv) => {
         // Start Docubot
         const filePath = argv.file;
+        const fullProcess = argv.full;
         console.log(`Documenting code from file '${filePath}' using magic...`);
-        await docubot.main(filePath); // Pass the file path to the main function
+        await docubot.main(filePath, fullProcess); // Pass the file path to the main function
       }
     )
     .command(

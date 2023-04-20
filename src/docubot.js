@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require("fs");
 const path = require("path");
+const { exec } = require("child_process");
 // Copy the config file to the local project if it does not exist
 const localConfigPath = path.join(process.cwd(), ".docubotrc");
 const defaultConfigPath = path.join(__dirname, ".docubotrc");
@@ -8,6 +9,8 @@ const defaultConfigPath = path.join(__dirname, ".docubotrc");
 if (!fs.existsSync(localConfigPath)) {
   fs.copyFileSync(defaultConfigPath, localConfigPath);
 }
+
+
 
 
 const GPT3Tokenizer = require("gpt3-tokenizer").default;
@@ -31,6 +34,7 @@ const {
   PROMPTS_FILE_PATH,
   TEMPLATE_FILE_PATH,
   DOCUBOT_DIRECTORY,
+  DOCS_FILE_TYPES,
   DOCUBOT_DIRECTORY_NAME,
 } = config;
 
@@ -48,6 +52,19 @@ function copyFolderSync(src, dest) {
       fs.copyFileSync(srcPath, destPath);
     }
   }
+}
+
+async function getChangedFiles() {
+  return new Promise((resolve, reject) => {
+    exec("git diff --name-only", (error, stdout) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      const changedFiles = stdout.split("\n").filter((file) => file !== "");
+      resolve(changedFiles);
+    });
+  });
 }
 
 console.log("CODE_BASE_PATH: ", CODE_BASE_PATH);
@@ -122,7 +139,7 @@ const getEstimatedPricing = async (sortedFilePathsByTokenCount) => {
   );
 };
 
-async function main(filePath) {
+async function main(filePath, fullProcess) {
   console.log("Running GPT-3 on codebase...");
   console.log("CODE_BASE_PATH: ", CODE_BASE_PATH);
   console.log("Counting Tokens .....");
@@ -132,8 +149,10 @@ async function main(filePath) {
   if(filePath) {
     sortedFilePathsByTokenCount = [[filePath, 100]]
   } else {
+    const changedFiles = await getChangedFiles();
     const { tokenCounts, totalTokens } = await countTokensRecursively(
-      CODE_BASE_PATH
+      CODE_BASE_PATH,
+      changedFiles
     );
     sortedFilePathsByTokenCount = Object.entries(tokenCounts).sort(
       ([, a], [, b]) => a - b
@@ -168,28 +187,31 @@ async function main(filePath) {
         tokensInPrompt,
         gptModel,
       } of batchResults) {
-        const relativeFilePath = path.relative(CODE_BASE_PATH, filePath);
-        const outputFile = `${MARKDOWN_DIRECTORY}/${relativeFilePath}.md`;
 
-        // Create the directories if they do not exist
-        await fs.promises.mkdir(path.dirname(outputFile), { recursive: true });
-        // Write the file
-        await fs.promises.writeFile(
-          outputFile,
-          gptResponseMessage.choices[0].message.content,
-          "utf8"
-        );
+        if(gptResponseMessage) {
+          const relativeFilePath = path.relative(CODE_BASE_PATH, filePath);
+          const outputFile = `${MARKDOWN_DIRECTORY}/${relativeFilePath}.md`;
 
-        if (gptResponseMessage.model.indexOf("gpt-3.5")) {
-          gpt3Tokens += gptResponseMessage.usage.total_tokens;
-          console.log(
-            `Processed gpt-3.5-turbo file: ${filePath}, Tokens: ${tokensInPrompt}`
+          // Create the directories if they do not exist
+          await fs.promises.mkdir(path.dirname(outputFile), { recursive: true });
+          // Write the file
+          await fs.promises.writeFile(
+            outputFile,
+            gptResponseMessage.choices[0].message.content,
+            "utf8"
           );
-        } else if (gptModel === "gpt-4") {
-          gpt4Tokens += gptResponseMessage.usage.total_tokens;
-          console.warn(
-            `Processed BIG gpt-4 file: ${filePath}, Tokens: ${tokensInPrompt}`
-          );
+
+          if (gptResponseMessage.model.indexOf("gpt-3.5")) {
+            gpt3Tokens += gptResponseMessage.usage.total_tokens;
+            console.log(
+              `Processed gpt-3.5-turbo file: ${filePath}, Tokens: ${tokensInPrompt}`
+            );
+          } else if (gptModel === "gpt-4") {
+            gpt4Tokens += gptResponseMessage.usage.total_tokens;
+            console.warn(
+              `Processed BIG gpt-4 file: ${filePath}, Tokens: ${tokensInPrompt}`
+            );
+          }
         }
       }
     }
@@ -233,6 +255,29 @@ async function getPromptAndExample(filePath) {
 }
 
 async function processFile(filePath) {
+  // Check if the file extension is in DOCS_FILE_TYPES
+  // If so, just copy the file to the markdown directory
+  const fileExtension = path.extname(filePath);
+  if (DOCS_FILE_TYPES.includes(fileExtension)) {
+    const content = await fs.promises.readFile(filePath, "utf8");
+
+    const relativeFilePath = path.relative(CODE_BASE_PATH, filePath);
+    const outputFile = `${MARKDOWN_DIRECTORY}/${relativeFilePath}.md`;
+
+    // Create the directories if they do not exist
+    await fs.promises.mkdir(path.dirname(outputFile), { recursive: true });
+
+    // Write the file directly without using the OpenAI response
+    await fs.promises.writeFile(outputFile, content, "utf8");
+
+    return {
+      filePath: filePath,
+      gptResponseMessage: null,
+      tokensInPrompt: 0,
+      gptModel: null,
+    };
+  }
+
   const { prePrompt, template } = await getPromptAndExample(filePath);
   const code = await fs.promises.readFile(filePath, "utf8");
   console.log("processingFile: ", filePath);

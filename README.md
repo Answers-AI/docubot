@@ -2,17 +2,42 @@
 
 Docubot is a bot that helps you document your code. It allows you to save your code into memory and chat with it using AnswerAI.
 
-## Summary
-
-Docubot is a bot that helps you document your code. It uses AnswerAI to chat with you and save your code into memory.
-
 ## Usage
 
-To use Docubot, you need to install it and then run it. Once it's running, you can chat with it using AnswerAI.
+To use Docubot, you need to install it globally and then run it. Once it's running, you can chat with it using AnswerAI.
 
+### First time
 ```bash
-npm install docubot
-docubot start
+npm install -g docubot
+docubot start -full
+```
+
+It will then count the tokens and give you a cost estimate. When you say yes, it will go through all of your files and magic... automated documentation!
+
+### Configuration
+| Constant name          | Description                                                      |
+|------------------------|------------------------------------------------------------------|
+| `CONFIG_FILE_TYPES`     | An array of strings representing valid configuration file types. |
+| `REACT_FILE_TYPES`      | An array of strings representing valid React file types.         |
+| `SCRIPT_FILE_TYPES`     | An array of strings representing valid script file types.        |
+| `API_FILE_TYPE_PATHS`   | An array of strings representing valid API file paths.           |
+| `INVALID_PATHS`         | An array of strings representing invalid file paths.             |
+| `INVALID_FILE_TYPES`    | An array of strings representing invalid file types.             |
+| `INVALID_FILE_NAMES`    | An array of strings representing invalid file names.             |
+| `PROMPT_TYPE_CONDITIONS`| An object containing key-value pairs representing prompt types and their associated conditions. |
+| `PROMPTS_FILE_PATH`     | A string representing the file path of the prompts file.         |
+| `TEMPLATE_FILE_PATH`    | A string representing the file path of the template file.        |
+| `PROMPT_FILES`          | An object containing key-value pairs representing prompt types and their associated prompt and template files. |
+| `CODE_BASE_PATH`        | A string representing the base path of the code.                 |
+| `DOCUBOT_DIRECTORY`     | A string representing the file path of the Docubot directory.    |
+| `PINECONE_INDEX_NAME`   | A string representing the name of the Pinecone index.            |
+| `PINECONE_NAMESPACE`    | A string representing the namespace of the Pinecone index.       |
+| `MARKDOWN_DIRECTORY`    | A string representing the file path of the Markdown directory.   |
+| `DOCUBOT_DIRECTORY_NAME`| A string representing the name of the Docubot directory.         |
+
+
+To execute the commond on a single file
+```bash
 docubot start /path/to/file
 ```
 
@@ -35,21 +60,6 @@ The `list` command allows you to list all of the files that you have saved.
 ```bash
 docubot list
 ```
-
-
-## List of Questions
-
-- How do I install Docubot?
-- How do I start Docubot?
-- What commands does Docubot have?
-- How do I save my code with Docubot?
-- How do I search my saved code with Docubot?
-- How do I list all of my saved code with Docubot?
-- How do I delete a file or directory from my saved code with Docubot?
-
-## List of Resources
-
-- Docubot can be used to document your code and make it easier to search and manage.
-
 ## TODO
 - Fix the pricing per token so that it can be the estimated amount, then return the final amount from OpenAI
+- Enable automated syncing to pincone on code changes
