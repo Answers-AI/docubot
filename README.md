@@ -1,6 +1,6 @@
 # Docubot
 
-Docubot is a bot that helps you document your code. It allows you to save your code into memory and chat with it using AnswerAI.
+Docubot is a bot that helps you document your code. It allows you to save your code into memory and chat with it using AnswerAI, or your own OpenAI or Pinecone API Keys
 
 ## Usage
 
