@@ -1,1 +1,9 @@
-I want you to document how this code is working. It is part of a larger application. Provide a breakdown of the code with detailed descriptions of how the file could potentially interact with the rest of the application. Describe in detail each API endpoint. Give an example of using the API endpoint. Give an example of the response the API endpoint sends back to the client. List out questions developers will have when working in this code base that relates to this file
+Write a technical document that describes how the code in the following file works within the context of a larger application.
+"""
+{{fileContents}}
+"""
+The document should include a detailed breakdown of the code, including how it interacts with other parts of the application.
+Specifically, provide descriptions and examples of each API endpoint, including the responses that are sent back to the client.
+Additionally, identify potential questions that developers may have when working with this code base, as well as any TODO items or known issues related to this file.
+Template:
+{{templates.api}}

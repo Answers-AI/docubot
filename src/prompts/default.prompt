@@ -1,1 +1,6 @@
-I want you to document how this code is working. It is part of a larger application. Provide a breakdown of the code with detailed descriptions of how the file could potentially interact with the rest of the application. If this script interacts with a third party, briefly describe what the third party is. List out questions developers will have when working in this code base that relates to this file. 
+Create a README for this file:
+List out any TODO Items 
+List out any known issues
+{{fileContents}}
+Template:
+{{templates.default}}

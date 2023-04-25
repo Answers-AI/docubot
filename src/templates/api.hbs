@@ -1,3 +1,5 @@
+{{prompt}}
+{{fileContents}}
 API Summary:
 <brief overview of the api endpoint and its endpoints>
 
@@ -16,16 +18,24 @@ METHOD /api/route
 Summary: <brief summary of the endpoint>
 Example Usage:
 ```
-<example code for using the api endpoint in react>
+curl -X GET \
+  http://localhost:3000/api/route \
+  -H 'Content-Type: application/json' \
+  -H 'cache-control: no-cache' \
+  -d '{
+  "data": "data"
+}'
 ```
 
 Example Response:
-```
-<example response when using the api endpoint in react>
+```json
+{
+  "response": "data"
+}
 ```
 
 Interaction Summary:
-<summary of how client side components could interact with this endpoint>
+
 
 Developer Questions:
-<list of questions Developers working with this component may have the following questions when debugging of changing this file>
+

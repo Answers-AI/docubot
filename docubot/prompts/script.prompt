@@ -1,1 +1,10 @@
-I want you to document how this code is working. It is part of a larger application. Provide a breakdown of the code with detailed descriptions of how the file could potentially interact with the rest of the application. If this script interacts with a third party, briefly describe what the third party is. List out questions developers will have when working in this code base that relates to this file. 
+Document how the code in the following file is working
+"""
+{{fileContents}}
+"""
+Provide a detailed breakdown of how it interacts with the larger application. 
+If this script interacts with a third party, briefly describe what the third party is. 
+List out any questions developers may have while working on this codebase that relate to this file.
+List out any known issues or bugs with the component and any todo items that need to be addressed.
+Template:
+{{templates.script}}

@@ -35,6 +35,11 @@ const API_FILE_TYPE_PATHS = [
   "/services/",
 ];
 
+const CONTENT_MODEL_FILE_TYPE_PATHS = [
+  "content_types",
+];
+
+
 const REACT_FILE_TYPES = [".jsx", ".tsx"];
 
 const SCRIPT_FILE_TYPES = [".js", ".ts"];
@@ -57,6 +62,9 @@ const INVALID_PATHS = [
   "generated",
   ".yarn",
   "cms-sync",
+  "/packages/",
+  "patches",
+  "docubot/templates",
   MARKDOWN_DIRECTORY,
 ];
 
@@ -127,6 +135,9 @@ const PROMPT_TYPE_CONDITIONS = {
     fileExt: DOCS_FILE_TYPES,
     pathIncludes: DOCS_FILE_TYPES
   },
+  contentModel: {
+    pathIncludes: CONTENT_MODEL_FILE_TYPE_PATHS
+  },
   default: {},
 };
 
@@ -137,8 +148,8 @@ const PROMPT_FILES = {
   config: { prompt: "config.prompt", template: "config.md" },
   script: { prompt: "script.prompt", template: "script.md" },
   default: { prompt: "default.prompt", template: "default.md" },
+  contentModel: { prompt: "contentModel.prompt", template: "contentModel.md" },
 };
-
 
 
 module.exports = {

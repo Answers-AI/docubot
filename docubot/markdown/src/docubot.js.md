@@ -1,35 +1,33 @@
 Summary:
-This file, docubot.js, is a script that processes a codebase to generate documentation using OpenAI's GPT-3 and GPT-4 models. It counts tokens in the codebase, estimates the cost of generating documentation, and creates markdown files with the generated documentation.
+This file is responsible for processing files in a given folder, generating a cost summary, and prompting the user to proceed with the operation. If the user chooses to proceed, the script splits the files into two categories, sends one category directly to writeResponsesToFile, and sends the other category to batchCompletionProcessor to get OpenAI docs. It then processes the markdown folder and gets embeddings.
 
 Import statements:
-- fs: File system module for reading and writing files.
-- path: Path module for handling file paths.
-- gpt3-tokenizer: Tokenizer for GPT-3 models.
-- dotenv: Module for loading environment variables from a .env file.
-- openai: OpenAI API client for interacting with GPT models.
-- readline: Module for reading user input from the command line.
+- dotenv: loads environment variables from a .env file
+- path: provides utilities for working with file and directory paths
+- readline: provides an interface for reading input from a readable stream (e.g. process.stdin) and writing output to a writable stream (e.g. process.stdout)
+- inititalize: a custom module that initializes the application with configuration settings
+- fileProcessor, batchCompletionProcessor, batchEmbeddingsProcessor, splitFiles, writeResponsesToFile: custom modules that process files and generate OpenAI docs
+- utils: a custom module that provides utility functions
 
 Script Summary:
-The script first checks if the local config file exists and copies it from the default config if not. It then sets up the GPT-3 tokenizer and OpenAI API client. The main function processes the codebase, counting tokens, estimating the cost, and generating documentation. It also provides utility functions for copying folders, getting file names from paths, and prompting the user for input.
+The script initializes the application with configuration settings, processes files in a given folder, generates a cost summary, prompts the user to proceed with the operation, and sends files to writeResponsesToFile and batchCompletionProcessor to get OpenAI docs. It then processes the markdown folder and gets embeddings.
 
 Internal Functions:
-- copyFolderSync(src, dest): Copies a folder and its contents from src to dest.
-- getFilenameFromPath(path): Returns the filename from a given file path.
-- getEstimatedPricing(sortedFilePathsByTokenCount): Estimates the cost of generating documentation based on token counts.
-- getPromptType(filePath): Determines the prompt type for a given file path based on the config's PROMPT_TYPE_CONDITIONS.
-- getPromptAndExample(filePath): Returns the prompt and template for a given file path based on its prompt type.
-- processFile(filePath): Processes a file, generating documentation using the GPT model and returning the result.
-- promptUser(question): Prompts the user for input with a given question and returns their response.
+- main: the main function that processes files, generates a cost summary, prompts the user to proceed with the operation, and sends files to writeResponsesToFile and batchCompletionProcessor to get OpenAI docs. It then processes the markdown folder and gets embeddings.
 
 External Functions:
-- main(filePath): The main function that processes the codebase, counting tokens, estimating the cost, and generating documentation.
+- main: exports the main function
 
 Interaction Summary:
-This file can be used as a standalone script or imported as a module in other parts of the application. When used as a module, it exports the main function and utility functions for other parts of the application to use.
+This file interacts with other custom modules to process files and generate OpenAI docs. It also interacts with the readline module to prompt the user to proceed with the operation.
 
 Developer Questions:
-1. How can I add new prompt types and conditions to the config?
-2. How can I adjust the GPT model parameters, such as temperature, for generating documentation?
-3. How can I modify the script to support other output formats besides markdown?
-4. How can I customize the token counting process for specific file types or languages?
-5. How can I handle errors or edge cases when processing files and generating documentation?
+- What is the purpose of the inititalize module and how does it work?
+- How are files processed and split into skipCompletionFiles and filesForDocumentation?
+- How does batchCompletionProcessor generate OpenAI docs?
+- How does batchEmbeddingsProcessor process the markdown folder and get embeddings?
+- What are the configuration settings used in this file and where are they defined?
+- How can I modify the prompt message in the readline module?
+- What happens if the user chooses not to proceed with the operation?
+- Are there any known issues or bugs with this file?
+- What are the todo items that need to be addressed in this file?

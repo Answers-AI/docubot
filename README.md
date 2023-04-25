@@ -15,25 +15,30 @@ docubot start -full
 It will then count the tokens and give you a cost estimate. When you say yes, it will go through all of your files and magic... automated documentation!
 
 ### Configuration
+Sure! Here's a table that describes the properties and values in the configuration file:
+
 | Constant name          | Description                                                      |
 |------------------------|------------------------------------------------------------------|
-| `CONFIG_FILE_TYPES`     | An array of strings representing valid configuration file types. |
-| `REACT_FILE_TYPES`      | An array of strings representing valid React file types.         |
-| `SCRIPT_FILE_TYPES`     | An array of strings representing valid script file types.        |
-| `API_FILE_TYPE_PATHS`   | An array of strings representing valid API file paths.           |
-| `INVALID_PATHS`         | An array of strings representing invalid file paths.             |
-| `INVALID_FILE_TYPES`    | An array of strings representing invalid file types.             |
-| `INVALID_FILE_NAMES`    | An array of strings representing invalid file names.             |
-| `PROMPT_TYPE_CONDITIONS`| An object containing key-value pairs representing prompt types and their associated conditions. |
-| `PROMPTS_FILE_PATH`     | A string representing the file path of the prompts file.         |
-| `TEMPLATE_FILE_PATH`    | A string representing the file path of the template file.        |
-| `PROMPT_FILES`          | An object containing key-value pairs representing prompt types and their associated prompt and template files. |
-| `CODE_BASE_PATH`        | A string representing the base path of the code.                 |
-| `DOCUBOT_DIRECTORY`     | A string representing the file path of the Docubot directory.    |
-| `PINECONE_INDEX_NAME`   | A string representing the name of the Pinecone index.            |
-| `PINECONE_NAMESPACE`    | A string representing the namespace of the Pinecone index.       |
-| `MARKDOWN_DIRECTORY`    | A string representing the file path of the Markdown directory.   |
-| `DOCUBOT_DIRECTORY_NAME`| A string representing the name of the Docubot directory.         |
+| `codeBasePath`         | A string representing the base path of the code.                 |
+| `pineconeIndexName`    | A string representing the name of the Pinecone index.            |
+| `pineconeNamespace`    | A string representing the namespace of the Pinecone index.       |
+| `docubotDirectoryName` | A string representing the name of the Docubot directory.         |
+| `docubotDirectory`     | A string representing the file path of the Docubot directory.    |
+| `markdownDirectory`    | A string representing the file path of the Markdown directory.   |
+| `promptsFilePath`      | A string representing the file path of the prompts file.         |
+| `templateFilePath`     | A string representing the file path of the template file.        |
+| `packageJsonPath`      | A string representing the file path of the package.json file.    |
+| `invalidPaths`         | An array of strings representing invalid file paths.             |
+| `invalidFileTypes`     | An array of strings representing invalid file types.             |
+| `invalidFileNames`     | An array of strings representing invalid file names.             |
+| `fileTypes`            | An object containing key-value pairs representing different file types and their associated properties, such as file types, prompt, and template files. |
+| `fileTypes.docs`       | An object representing documentation file types and their associated properties. |
+| `fileTypes.react`      | An object representing React file types and their associated properties. |
+| `fileTypes.api`        | An object representing API file types and their associated properties. |
+| `fileTypes.config`     | An object representing configuration file types and their associated properties. |
+| `fileTypes.script`     | An object representing script file types and their associated properties. |
+| `fileTypes.contentModel`| An object representing content model file types and their associated properties. |
+| `fileTypes.default`    | An object representing the default file type and its associated properties. |
 
 
 To execute the commond on a single file
@@ -60,6 +65,15 @@ The `list` command allows you to list all of the files that you have saved.
 ```bash
 docubot list
 ```
-## TODO
-- Fix the pricing per token so that it can be the estimated amount, then return the final amount from OpenAI
-- Enable automated syncing to pincone on code changes
+## TODO Items
+### CLI
+- Add husky job to save to autodocument the change, allow the user to change the comment then pinecone on commit
+- Classify files based on the area of the site using the embedding API
+- Enable automated syncing to pincone without embeddings on when a file changes
+- handle files over 8k in tokens
+- Git action for pull requests that auto create the change log documentation based on the commit history and path file
+- 
+
+### UI
+- Add ability to select files to use in completion
+- Show the user how many tokens they can have in the completion based on what files, model, and prompt they have selected
