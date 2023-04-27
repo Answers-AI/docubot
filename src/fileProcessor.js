@@ -221,7 +221,8 @@ const upsertEmbeddingsToPinecone = async (embeddings, config) => {
                   text: content,
                   tokens,
                   filePath: relativeFilePath,
-                  datasource: `docubot-${packageJson.name}-v${packageJson.version}`,
+                  source: `docubot`,
+                  repo: `${packageJson.name}-v${packageJson.version}`,
                   code: codeContent
                 }
               }
