@@ -7,7 +7,7 @@ Known Issues:
 - None
 
 API Summary:
-This file contains an API endpoint for a web application. The endpoint allows users to perform certain actions on the application.
+This file contains an API endpoint for a web application. The endpoint is responsible for handling requests related to a specific route.
 
 Import statements:
 - None
@@ -20,7 +20,7 @@ External Services:
 
 API Endpoints:
 - GET /api/route
-Summary: This endpoint retrieves data from the application.
+Summary: This endpoint retrieves data related to the specified route.
 Example Usage:
 ```
 curl -X GET \
@@ -31,6 +31,7 @@ curl -X GET \
   "data": "data"
 }'
 ```
+
 Example Response:
 ```json
 {
@@ -39,7 +40,7 @@ Example Response:
 ```
 
 Interaction Summary:
-This API endpoint allows users to interact with the web application by retrieving data.
+This API endpoint interacts with the web application's database to retrieve data related to the specified route.
 
 Developer Questions:
 - None

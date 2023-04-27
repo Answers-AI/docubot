@@ -27,10 +27,10 @@ if (require.main === module) {
       },
       async (argv) => {
         // Start Docubot
-        console.log("Starting Docubot with arguments...", argv)
+        console.log("Starting Docubot...")
         const filePath = argv.file;
         const fullProcess = argv.full;
-        console.log(`Documenting code from file '${filePath}' using magic...`);
+        console.log(`Finding what code to docuent based on the .docubotrc file... update the .docubotrc file to change it to work best for your repo`);
         await docubot.main(filePath, fullProcess); // Pass the file path and fullProcess flag to the main function
       }
     )

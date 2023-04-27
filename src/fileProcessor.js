@@ -221,7 +221,8 @@ const upsertEmbeddingsToPinecone = async (embeddings, config) => {
                   text: content,
                   tokens,
                   filePath: relativeFilePath,
-                  datasource: `docubot-${packageJson.name}-v${packageJson.version}`,
+                  source: `docubot`,
+                  repo: `${packageJson.name}-v${packageJson.version}`,
                   code: codeContent
                 }
               }
@@ -234,7 +235,7 @@ const upsertEmbeddingsToPinecone = async (embeddings, config) => {
         });
 
       console.log(
-        `Upserted vector: ${vectorId} with datasource 'docubot-${packageJson.name}-v${packageJson.version}'`
+        `Upserted vector: ${vectorId} with source: 'docubot', repo: '${packageJson.name}-v${packageJson.version}'`
       );
     }
   }

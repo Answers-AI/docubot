@@ -1,30 +1,41 @@
 Summary:
-This file contains functions that initialize and configure the prompts and templates folders for a documentation bot. It also copies a default configuration file if one does not exist.
+This file contains functions that initialize and copy configuration files, prompts, and templates for a Docubot project.
 
 Import statements:
-The file imports the fs and path modules.
+- fs: a Node.js module for interacting with the file system
+- path: a Node.js module for working with file paths
 
 Script Summary:
-The file exports four functions: init, initConfigFile, initPromptsFolder, and initTemplatesFolder. The init function calls the other three functions to initialize the prompts and templates folders and return the configuration file.
+This script exports four functions: init, initConfigFile, initPromptsFolder, and initTemplatesFolder. init is the main function that initializes a Docubot project by calling initConfigFile, initPromptsFolder, and initTemplatesFolder.
 
 Internal Functions:
-- initConfigFile: This function takes a folder path as a parameter and copies a default configuration file to the folder if one does not exist. It then returns the configuration file.
-- copyFolderSync: This is a helper function that takes a source and destination path as parameters and copies a folder recursively.
-- initPromptsFolder: This function takes a configuration object and folder path as parameters and copies the prompts folder to the folder path if it does not exist.
-- initTemplatesFolder: This function takes a configuration object and folder path as parameters and copies the templates folder to the folder path if it does not exist.
+- initConfigFile: a function that copies the default config file to the project folder if it doesn't exist and returns the configuration object
+  - Parameters: folderPath (string) - the path to the project folder
+  - Returns: fileConfig (object) - the configuration object
+- copyFolderSync: a helper function that copies a folder recursively
+  - Parameters: src (string) - the source folder path, dest (string) - the destination folder path
+- initPromptsFolder: a function that copies the prompts folder to the project folder if it doesn't exist
+  - Parameters: config (object) - the configuration object, folderPath (string) - the path to the project folder
+- initTemplatesFolder: a function that copies the templates folder to the project folder if it doesn't exist
+  - Parameters: config (object) - the configuration object, folderPath (string) - the path to the project folder
 
 External Functions:
-- init: This function takes a folder path as a parameter and returns a Promise that resolves with the configuration object after initializing the prompts and templates folders.
+- init: the main function that initializes a Docubot project
+  - Parameters: folderPath (string) - the path to the project folder
+  - Returns: a Promise that resolves with the configuration object
+- initConfigFile: a function that copies the default config file to the project folder if it doesn't exist and returns the configuration object
+  - Parameters: folderPath (string) - the path to the project folder
+  - Returns: fileConfig (object) - the configuration object
+- initPromptsFolder: a function that copies the prompts folder to the project folder if it doesn't exist
+  - Parameters: config (object) - the configuration object, folderPath (string) - the path to the project folder
+- initTemplatesFolder: a function that copies the templates folder to the project folder if it doesn't exist
+  - Parameters: config (object) - the configuration object, folderPath (string) - the path to the project folder
 
 Interaction Summary:
-This file interacts with the larger application by providing functions that initialize and configure the prompts and templates folders for a documentation bot. It also copies a default configuration file if one does not exist.
+This file interacts with the rest of the Docubot application by providing functions that initialize and copy configuration files, prompts, and templates for a Docubot project.
 
 Developer Questions:
-- What is the format of the configuration file?
-- What happens if the prompts or templates folders already exist?
-- What happens if the default configuration file cannot be copied?
-- How can I customize the prompts and templates folders? 
-- How can I modify the configuration file? 
-
-Known Issues and Todo Items:
-There are no known issues or bugs with this component. However, a possible todo item could be to add more customization options for the prompts and templates folders.
+- What is the structure of the configuration object returned by initConfigFile?
+- What happens if the default config file is missing or invalid?
+- How can I customize the prompts and templates for my Docubot project?
+- Are there any known issues with copying large folders using copyFolderSync?
