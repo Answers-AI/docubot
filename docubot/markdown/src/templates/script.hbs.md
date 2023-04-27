@@ -12,24 +12,25 @@
 ## Summary
 This file contains [brief overview of the file and all its major components].
 
-## Import statements
+## Import Statements
 This file imports [describe the imports and dependencies].
 
 ## Script Summary
-This file [summary of file].
+[Summary of file]
 
 ## Internal Functions
-- `function_name(param1, param2)`: [description of function], returns [what is returned]
-- `function_name(param1, param2)`: [description of function], returns [what is returned]
+- `function1(param1, param2)`: [Description of function1]. Returns [what is returned].
+- `function2(param1)`: [Description of function2]. Returns [what is returned].
 
 ## External Functions
-- `function_name(param1, param2)`: [description of function], returns [what is returned]
-- `function_name(param1, param2)`: [description of function], returns [what is returned]
+- `function3(param1, param2)`: [Description of function3]. Returns [what is returned].
+- `function4(param1)`: [Description of function4]. Returns [what is returned].
 
 ## Interaction Summary
 This file could interact with the rest of the application by [summary of how the file could interact with the rest of the application].
 
 ## Developer Questions
 Developers working with this component may have the following questions when debugging:
-- Question 1: [Description of question]
-- Question 2: [Description of question]
+- Question 1: [Description of question 1]
+- Question 2: [Description of question 2]
+- Question 3: [Description of question 3]

@@ -1,35 +1,35 @@
 Summary:
-This file defines a command-line interface (CLI) using the yargs library to run the Docubot documentation tool. It defines two commands: "start" to run Docubot on a specific file and "list" to list all saved files. It also includes an option to run the full process on all files.
+This file is the entry point for the Docubot CLI (Command Line Interface) tool. It imports various dependencies such as yargs, fs, path, readline, and the Docubot module. It defines the CLI using yargs and provides options to run the full process on all files, start Docubot, and list all saved files. 
 
 Import statements:
-- docubot: a custom module that contains the main function for running the documentation process
-- fs: a Node.js module for working with the file system
-- path: a Node.js module for working with file and directory paths
-- readline: a Node.js module for reading input from a user
-- yargs: a library for building command-line interfaces
-- hideBin: a helper function from yargs to remove the first two arguments from the process.argv array
+- docubot: The main module for the Docubot tool.
+- fs: The Node.js file system module.
+- path: The Node.js path module.
+- readline: The Node.js readline module.
+- yargs: A Node.js library for building interactive command-line tools.
 
 Script Summary:
-The script defines a CLI using yargs with two commands: "start" and "list". The "start" command runs the Docubot tool on a specific file, while the "list" command lists all saved files. It also includes an option to run the full process on all files.
+This script defines the CLI using yargs and provides options to run the full process on all files, start Docubot, and list all saved files. It also exports the argv object.
 
 Internal Functions:
-None
+- None
 
 External Functions:
-None
+- None
 
 Interaction Summary:
-This file interacts with the Docubot module to run the documentation process on a specific file. It also interacts with the file system to read and write files, and with the readline module to read input from the user.
+This file interacts with the rest of the application by providing a CLI interface for running the Docubot tool. It imports the Docubot module and uses it to start the documentation process on a specified file or on all files if the full process flag is set.
 
 Developer Questions:
-- What is the structure of the command-line arguments expected by this script?
-- How does the "start" command interact with the Docubot module to run the documentation process?
-- How does the "list" command retrieve and display the list of saved files?
-- How can I add new commands or options to the CLI defined in this script?
-- How can I modify the behavior of the Docubot module to customize the documentation process?
-- Are there any known issues or bugs with the CLI or the Docubot module that I should be aware of?
-- What are the next steps for implementing the "list" command functionality?
-- How can I test the CLI and the Docubot module to ensure they are working correctly? 
+- What is the purpose of the yargs library and how does it work?
+- How does the Docubot module interact with this file and what functions does it provide?
+- How can I add additional commands or options to the CLI interface?
+- How can I implement the list functionality for the CLI tool?
+- How can I modify the .docubotrc file to change the behavior of the tool?
+- How can I handle errors or exceptions that occur during the documentation process?
+- How can I test the CLI tool and ensure it is working correctly?
+- How can I integrate the CLI tool with other parts of the application? 
 
-Known Issues and Todo Items:
-- The "list" command functionality is not yet implemented. (Todo)
+Known Issues and TODOs:
+- The list functionality is not yet implemented.
+- There may be errors or exceptions that occur during the documentation process that are not handled properly.

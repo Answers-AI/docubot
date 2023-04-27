@@ -1,47 +1,45 @@
 Summary:
-This file contains two functions, getTemplateFiles and readTemplateFile, that are used to read and retrieve the contents of template files. The file also includes Jest tests to ensure that these functions are working correctly.
+This file contains two functions, `getTemplateFiles` and `readTemplateFile`, which are used to read and return the content of template files. The file also includes mock implementations for `fs` and `path` modules, and a test suite for the two functions.
 
 Import statements:
 The file imports the following modules:
-- getTemplateFiles and readTemplateFile from './getTemplateFiles'
-- fs from 'fs'
-- path from 'path'
-- Jest's mocking functions
+- `getTemplateFiles` and `readTemplateFile` from `./getTemplateFiles`
+- `fs` from the Node.js standard library
+- `path` from the Node.js standard library
+- `jest` for mocking modules during testing
 
 Script Summary:
 The file defines two functions:
-- getTemplateFiles: This function takes in a file path, fs, and path as arguments. It uses fs and path to read the contents of all files in the specified directory and returns an object with the contents of each file.
-- readTemplateFile: This function takes in fs and a file path as arguments. It uses fs to read the contents of the specified file and returns the contents as a string.
+- `getTemplateFiles`: This function takes in a file path, `fs` and `path` modules, and reads the content of all files in the directory specified by the file path. It returns an object with the file names (without extensions) as keys and the file content as values.
+- `readTemplateFile`: This function takes in an `fs` module and a file path, and reads the content of the file at the specified path.
 
 Internal Functions:
 - None
 
 External Functions:
-- getTemplateFiles: This function takes in a file path, fs, and path as arguments. It returns an object with the contents of each file in the specified directory.
+- `getTemplateFiles`: This function takes in a file path, `fs` and `path` modules, and returns an object with the content of all files in the directory specified by the file path.
   - Parameters:
-    - file path: a string representing the path to the directory containing the template files
-    - fs: the fs module
-    - path: the path module
+    - `filePath`: A string representing the path to the directory containing the template files.
+    - `fs`: The Node.js `fs` module.
+    - `path`: The Node.js `path` module.
   - Returns:
-    - An object with the contents of each file in the specified directory
-- readTemplateFile: This function takes in fs and a file path as arguments. It returns the contents of the specified file as a string.
+    - An object with the file names (without extensions) as keys and the file content as values.
+- `readTemplateFile`: This function takes in an `fs` module and a file path, and reads the content of the file at the specified path.
   - Parameters:
-    - fs: the fs module
-    - file path: a string representing the path to the template file
+    - `fs`: The Node.js `fs` module.
+    - `filePath`: A string representing the path to the file to be read.
   - Returns:
-    - The contents of the specified file as a string
+    - A string representing the content of the file.
 
 Interaction Summary:
-This file interacts with the rest of the application by providing functions to read and retrieve the contents of template files. These functions can be used by other modules to generate dynamic content.
+This file does not have any direct interaction with the rest of the application. It provides utility functions that can be used by other parts of the application to read and return the content of template files.
 
 Developer Questions:
 - What is the expected format of the template files?
-- What happens if the specified directory or file path does not exist?
-- How can I modify these functions to handle different file formats or encodings?
-- How can I modify these functions to handle errors that may occur during file reading?
-- How can I modify these functions to handle large files or directories?
-- How can I modify these functions to cache the contents of the template files for faster retrieval?
-- How can I modify these functions to handle asynchronous file reading? 
+- How should errors be handled when reading the template files?
+- How can the `getTemplateFiles` function be modified to read files recursively from subdirectories?
+- How can the `readTemplateFile` function be modified to read files in binary mode instead of text mode?
+- How can the mock implementations for `fs` and `path` be modified to test error handling? 
 
 Known Issues/Bugs:
 - None
