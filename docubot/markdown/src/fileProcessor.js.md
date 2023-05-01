@@ -1,44 +1,29 @@
-Summary:
-This file is responsible for processing code files, generating documentation using OpenAI's GPT-3, and creating embeddings for the generated documentation. It also handles writing the documentation to markdown files and upserting the embeddings to Pinecone, a vector database.
+This JavaScript code is a file processing module that utilizes Node.js, OpenAI, Pinecone, and other libraries to generate documentation for a given codebase. The module is designed to work with vector databases and provides various functions to process files, generate summaries, and create embeddings for the documentation.
 
-Import statements:
-- 'fs' and 'path' are Node.js built-in modules for file system operations and handling file paths.
-- 'PineconeClient' is a client for interacting with the Pinecone vector database.
-- Utility functions and OpenAI functions are imported from './utils' and './openai' respectively.
+Key features and functions of the code include:
 
-Script Summary:
-The script exports several functions for processing code files, generating documentation, and creating embeddings. It also provides utility functions for determining file types and handling invalid files.
+1. `fileProcessor`: Recursively processes files in a given directory, filtering out invalid files and directories based on the provided configuration. It compiles completion prompts for each valid file and calculates the token count, model, and cost for the file.
 
-Internal Functions:
-1. isInvalidFile(filePath, config): Determines if a file is invalid based on the provided configuration. Returns true if the file is invalid, false otherwise.
-2. getFileContents(filePath): Reads the contents of a file and returns an object containing the contents and the file path.
-3. getFileType(filePath, config): Determines the file type based on the provided configuration and returns an object with the type, prompt, template, and skipCompletion properties.
-4. getFilePathWithReplacedBase(file, config): Returns the file path with the base replaced by the markdown directory from the configuration.
-5. generateResponses(files, gptModel): Generates GPT-3 responses for the given files and returns a promise that resolves to an array of responses.
-6. generateEmbeddings(fileContentsArray): Generates embeddings for the given file contents and returns a promise that resolves to an array of embeddings.
+2. `isInvalidFile`: Determines if a file is invalid based on the provided configuration, checking for invalid paths, file types, and file names.
 
-External Functions:
-1. fileProcessor(dirPath, config): Processes files in the given directory and returns an array of file data objects.
-2. batchCompletionProcessor(files, config): Processes files in batches and generates GPT-3 completions for them.
-3. batchEmbeddingsProcessor(allFilesToProcess, config): Processes files in batches and generates embeddings for them.
-4. splitFiles(files): Splits the files into two arrays, one with files that have skipCompletion set to true, and the other with the rest of the files.
-5. writeResponsesToFile(files, responses, config): Writes the GPT-3 responses to markdown files.
-6. writePreviewMarkdownToFile(files, config): Writes the preview markdown to files.
+3. `getFileType`: Identifies the file type based on the file path and configuration, returning an object containing the type, prompt, template, and skipCompletion flag.
 
-Interaction Summary:
-This file is used by the main application to process code files, generate documentation, and create embeddings. It interacts with the OpenAI API for generating GPT-3 completions and embeddings, and the Pinecone API for upserting embeddings to the vector database.
+4. `batchCompletionProcessor`: Processes files in batches, generating responses for each batch and writing the responses to the corresponding markdown files.
 
-Developer Questions:
-1. How do I add support for a new file type or language?
-2. How can I customize the GPT-3 prompts for different file types?
-3. How can I change the batch size for processing files?
-4. How can I modify the Pinecone configuration for upserting embeddings?
+5. `batchEmbeddingsProcessor`: Processes files in batches, generating embeddings for each file and upserting the embeddings to Pinecone.
 
-Known Issues/Bugs:
-1. The script assumes that the project is an npm project and uses the package.json file for namespacing the repository and its versions. This should be made more generic to support all types of projects.
-2. The double extension issue in the 'getFilePathWithReplacedBase' function is currently fixed using a hack. This should be addressed properly.
+6. `writeResponsesToFile`: Writes the generated responses to the corresponding markdown files.
 
-Todo Items:
-1. Make the script work with all types of projects, not just npm projects.
-2. Fix the double extension issue in the 'getFilePathWithReplacedBase' function.
-3. Improve error handling and logging throughout the script.
+7. `writePreviewMarkdownToFile`: Writes the preview prompts to the corresponding markdown files.
+
+8. `upsertEmbeddingsToPinecone`: Upserts the generated embeddings to Pinecone, a vector database.
+
+9. `generateResponses`: Generates responses for the given files using the OpenAI API.
+
+10. `generateEmbeddings`: Generates embeddings for the given file contents using the OpenAI API.
+
+11. `splitFiles`: Splits the files into two arrays, one containing files with the skipCompletion flag set to true and the other containing the rest of the files.
+
+12. `getChangedFilesWithStatus`: Retrieves the changed files with their status (added, modified, or deleted) using Git commands.
+
+The module exports these functions, making them available for use in other parts of the application.
