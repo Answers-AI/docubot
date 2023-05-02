@@ -12,9 +12,6 @@ const {
   writePreviewMarkdownToFile,
 } = require("./fileProcessor");
 const { generateCostSummary } = require("./utils");
-const { createChangeLog } = require("./createChangeLog");
-
-const readline = require("readline");
 
 async function readInput(prompt) {
   const rl = readline.createInterface({
@@ -30,7 +27,13 @@ async function readInput(prompt) {
   });
 }
 
-async function main({ skipCompletion, update, filePath, full, dirPath }) {
+async function main({
+  skipCompletion,
+  update,
+  filePath,
+  fullProcess,
+  dirPath,
+}) {
   const codeBasePath = process.env.CODE_BASE_PATH || process.cwd();
   const folderPath = filePath
     ? path.dirname(filePath)
@@ -44,7 +47,7 @@ async function main({ skipCompletion, update, filePath, full, dirPath }) {
       path.resolve(filePath),
       finalConfig
     );
-  } else if (full) {
+  } else if (fullProcess) {
     allFilesToProcess = await fileProcessor(folderPath, finalConfig);
   } else if (dirPath) {
     allFilesToProcess = await fileProcessor(dirPath, finalConfig);

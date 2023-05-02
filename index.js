@@ -47,7 +47,12 @@ const argv = yargs(hideBin(process.argv))
         `Finding what code to document based on the .docubotrc file... update the .docubotrc file to change it to work best for your repo`
       );
 
-      await docubot.main(filePath, fullProcess, dirPath); // Pass the file path, fullProcess flag, and dirPath to the main function
+      await docubot.main({
+        skipCompletion: false,
+        filePath,
+        fullProcess,
+        dirPath,
+      }); // Pass the file path, fullProcess flag, and dirPath to the main function
     }
   )
   .command("mem", "Memorize to Pinecone", {}, async () => {
