@@ -71,7 +71,9 @@ const fileProcessor = async (dirPath, config) => {
 const isInvalidFile = (filePath, config) => {
   const ext = path.extname(filePath);
   const fileParentDir = path.dirname(filePath);
-  const cond1 = config.invalidPaths.some((invalidPath) => fileParentDir.includes(invalidPath));
+  const cond1 = config.invalidPaths.some((invalidPath) =>
+    fileParentDir.includes(invalidPath)
+  );
   const cond2 = config.invalidFileTypes.includes(ext);
   const cond3 = config.invalidFileNames.includes(path.basename(filePath));
 
@@ -283,75 +285,106 @@ const splitFiles = (files) => {
 
 async function getChangedFilesWithStatus(codepath, config) {
   return new Promise((resolve, reject) => {
-    exec(`git diff --name-status HEAD ${codepath}`, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-      }
-      if (stderr) {
-        reject(stderr);
-      }
-      const fileStatusList = stdout.split("\n").filter(Boolean);
-      const changedFiles = fileStatusList.map((fileStatus) => {
-        const [status, filePath] = fileStatus.split("\t");
-        return { filePath, status };
-      });
+    exec(
+      "git rev-parse --verify HEAD",
+      { cwd: codepath },
+      (error, stdout, stderr) => {
+        if (error && stderr.includes("fatal: Needed a single revision")) {
+          // No commit history found, returning empty result.
+          return resolve({
+            addedFiles: [],
+            modifiedFiles: [],
+            deletedFiles: [],
+          });
+        } else if (error || stderr) {
+          // Some other error occurred, rejecting the promise.
+          return reject(
+            new Error(`Error verifying HEAD: ${stderr || error.message}`)
+          );
+        }
 
-      const gitDiffPromises = changedFiles.map(async (file) => {
-        return new Promise((resolve, reject) => {
-          exec(`git diff HEAD -- ${file.filePath}`, (error, stdout, stderr) => {
+        exec(
+          `git diff --name-status HEAD ${codepath}`,
+          { cwd: codepath },
+          (error, stdout, stderr) => {
             if (error) {
               reject(error);
             }
             if (stderr) {
               reject(stderr);
             }
-            file.gitDiff = stdout;
-            resolve(file);
-          });
-        });
-      });
+            const fileStatusList = stdout.split("\n").filter(Boolean);
+            const changedFiles = fileStatusList.map((fileStatus) => {
+              const [status, filePath] = fileStatus.split("\t");
+              return { filePath, status };
+            });
 
-      Promise.all(gitDiffPromises)
-        .then((result) => {
-          const addedFiles = [];
-          const modifiedFiles = [];
-          const deletedFiles = [];
+            const gitDiffPromises = changedFiles.map(async (file) => {
+              return new Promise((resolve, reject) => {
+                exec(
+                  `git diff HEAD -- ${file.filePath}`,
+                  { cwd: codepath },
+                  (error, stdout, stderr) => {
+                    if (error) {
+                      reject(error);
+                    }
+                    if (stderr) {
+                      reject(stderr);
+                    }
+                    file.gitDiff = stdout;
+                    resolve(file);
+                  }
+                );
+              });
+            });
 
-          for (const file of result) {
-            const fullFilePath = path.join(config.codeBasePath, file.filePath);
-            if(!isInvalidFile(fullFilePath, config)) {
-              const { filePath, status, gitDiff } = file;
+            Promise.all(gitDiffPromises)
+              .then((result) => {
+                const addedFiles = [];
+                const modifiedFiles = [];
+                const deletedFiles = [];
 
-              switch (status) {
-                case 'A':
-                  addedFiles.push({
-                    filePath: path.join(config.codeBasePath, filePath),
-                    gitDiff,
-                    status,
-                  });
-                  break;
-                case 'M':
-                  modifiedFiles.push({
-                    filePath: path.join(config.codeBasePath, filePath),
-                    gitDiff,
-                    status,
-                  });
-                  break;
-                case 'D':
-                  deletedFiles.push({
-                    filePath: path.join(config.codeBasePath, filePath),
-                    gitDiff,
-                    status,
-                  });
-                  break;
-              }
-            }
+                for (const file of result) {
+                  const fullFilePath = path.join(
+                    config.codeBasePath,
+                    file.filePath
+                  );
+                  if (!isInvalidFile(fullFilePath, config)) {
+                    const { filePath, status, gitDiff } = file;
+
+                    switch (status) {
+                      case "A":
+                        addedFiles.push({
+                          filePath: path.join(config.codeBasePath, filePath),
+                          gitDiff,
+                          status,
+                        });
+                        break;
+                      case "M":
+                        modifiedFiles.push({
+                          filePath: path.join(config.codeBasePath, filePath),
+                          gitDiff,
+                          status,
+                        });
+                        break;
+                      case "D":
+                        deletedFiles.push({
+                          filePath: path.join(config.codeBasePath, filePath),
+                          gitDiff,
+                          status,
+                        });
+                        break;
+                    }
+                  }
+                }
+
+                resolve({ addedFiles, modifiedFiles, deletedFiles });
+              })
+              .catch((error) => reject(error));
           }
-
-          resolve({ addedFiles, modifiedFiles, deletedFiles });
-        })
-        .catch((error) => reject(error));
-    });
+        );
+      }
+    );
   });
 }
 module.exports = {
@@ -363,5 +396,5 @@ module.exports = {
   splitFiles,
   writeResponsesToFile,
   writePreviewMarkdownToFile,
-  getChangedFilesWithStatus
+  getChangedFilesWithStatus,
 };
