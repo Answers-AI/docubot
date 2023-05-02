@@ -1,3 +1,6 @@
+Analyze the given code, written in [Javascript], which utilizes [Nodejs, OpenAI, Pinecone, VSCode, MacOS], and generate a summary of the document that will be relevant for vector databases. The summary should provide a brief overview of the code's purpose and functionality, including any notable features or functions that it contains.
+Code:
+"""
 const fs = require("fs").promises;
 const path = require("path");
 const { exec } = require("child_process");
@@ -12,52 +15,12 @@ const {
 } = require("./utils");
 const { createChatCompletion, createEmbedding } = require("./openai");
 
-const getFileData = async (filePath, config) => {
-  if (!isInvalidFile(filePath, config)) {
-    const fileTypeObj = getFileType(filePath, config);
-    let tokens = 0;
-    let model = "";
-    let cost = 0;
-    const completionObj = await compileCompletionPrompts(
-      filePath,
-      fileTypeObj.prompt,
-      fileTypeObj.skipCompletion,
-      config
-    );
-
-    if (!fileTypeObj.skipCompletion) {
-      tokens = await countTokens(completionObj.fullPrompt);
-      model = getCompletionModelBasedOnTokenSize(tokens);
-      cost = getEstimatedPricing(model, tokens);
-    }
-
-    // TODO: Send to the embedding api for classification
-    return {
-      filePath,
-      type: fileTypeObj.type,
-      prompt: fileTypeObj.prompt,
-      template: fileTypeObj.template,
-      skipCompletion: fileTypeObj.skipCompletion,
-      fullPrompt: completionObj?.fullPrompt,
-      fileContents: completionObj?.fileContents,
-      tokens,
-      model,
-      cost,
-    };
-  } else {
-    console.log(`Skipping file: ${filePath}`);
-    return null;
-  }
-};
-
-const fileProcessor = async (iPath, config) => {
+const fileProcessor = async (dirPath, config) => {
   const filesData = [];
-  const isDirectory = (await fs.stat(iPath)).isDirectory();
-  const files = await (isDirectory ? fs.readdir(iPath) : [iPath]);
-  // console.log({ iPath, isDirectory, files });
+  const files = await fs.readdir(dirPath);
 
   for (const file of files) {
-    const filePath = isDirectory ? path.join(iPath, file) : file;
+    const filePath = path.join(dirPath, file);
     const fileStats = await fs.stat(filePath);
 
     if (fileStats.isDirectory()) {
@@ -69,10 +32,38 @@ const fileProcessor = async (iPath, config) => {
         filesData.push(...(await fileProcessor(filePath, config)));
       }
     } else {
-      const fileData = await getFileData(filePath, config);
-      if (fileData) {
+      if (!isInvalidFile(filePath, config)) {
+        const fileTypeObj = getFileType(filePath, config);
+        let tokens = 0;
+        let model = "";
+        let cost = 0;
+        const completionObj = await compileCompletionPrompts(
+          filePath,
+          fileTypeObj.prompt,
+          fileTypeObj.skipCompletion,
+          config
+        );
+        if (!fileTypeObj.skipCompletion) {
+          tokens = await countTokens(completionObj.fullPrompt);
+          model = getCompletionModelBasedOnTokenSize(tokens);
+          cost = getEstimatedPricing(model, tokens);
+        }
+
         // TODO: Send to the embedding api for classification
-        filesData.push(fileData);
+        filesData.push({
+          filePath,
+          type: fileTypeObj.type,
+          prompt: fileTypeObj.prompt,
+          template: fileTypeObj.template,
+          skipCompletion: fileTypeObj.skipCompletion,
+          fullPrompt: completionObj?.fullPrompt,
+          fileContents: completionObj?.fileContents,
+          tokens,
+          model,
+          cost,
+        });
+      } else {
+        console.log(`Skipping file: ${filePath}`);
       }
     }
   }
@@ -83,10 +74,7 @@ const fileProcessor = async (iPath, config) => {
 const isInvalidFile = (filePath, config) => {
   const ext = path.extname(filePath);
   const fileParentDir = path.dirname(filePath);
-  const cond1 = config.invalidPaths.some((invalidPath) =>
-    fileParentDir.includes(invalidPath)
-  );
-
+  const cond1 = config.invalidPaths.some((invalidPath) => fileParentDir.includes(invalidPath));
   const cond2 = config.invalidFileTypes.includes(ext);
   const cond3 = config.invalidFileNames.includes(path.basename(filePath));
 
@@ -94,7 +82,6 @@ const isInvalidFile = (filePath, config) => {
     console.log(`Skipping file: ${filePath}`, cond1, cond2, cond3);
     return true;
   }
-
   return false;
 };
 
@@ -299,106 +286,75 @@ const splitFiles = (files) => {
 
 async function getChangedFilesWithStatus(codepath, config) {
   return new Promise((resolve, reject) => {
-    exec(
-      "git rev-parse --verify HEAD",
-      { cwd: codepath },
-      (error, stdout, stderr) => {
-        if (error && stderr.includes("fatal: Needed a single revision")) {
-          // No commit history found, returning empty result.
-          return resolve({
-            addedFiles: [],
-            modifiedFiles: [],
-            deletedFiles: [],
-          });
-        } else if (error || stderr) {
-          // Some other error occurred, rejecting the promise.
-          return reject(
-            new Error(`Error verifying HEAD: ${stderr || error.message}`)
-          );
-        }
+    exec(`git diff --name-status HEAD ${codepath}`, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      }
+      if (stderr) {
+        reject(stderr);
+      }
+      const fileStatusList = stdout.split("\n").filter(Boolean);
+      const changedFiles = fileStatusList.map((fileStatus) => {
+        const [status, filePath] = fileStatus.split("\t");
+        return { filePath, status };
+      });
 
-        exec(
-          `git diff --name-status HEAD ${codepath}`,
-          { cwd: codepath },
-          (error, stdout, stderr) => {
+      const gitDiffPromises = changedFiles.map(async (file) => {
+        return new Promise((resolve, reject) => {
+          exec(`git diff HEAD -- ${file.filePath}`, (error, stdout, stderr) => {
             if (error) {
               reject(error);
             }
             if (stderr) {
               reject(stderr);
             }
-            const fileStatusList = stdout.split("\n").filter(Boolean);
-            const changedFiles = fileStatusList.map((fileStatus) => {
-              const [status, filePath] = fileStatus.split("\t");
-              return { filePath, status };
-            });
+            file.gitDiff = stdout;
+            resolve(file);
+          });
+        });
+      });
 
-            const gitDiffPromises = changedFiles.map(async (file) => {
-              return new Promise((resolve, reject) => {
-                exec(
-                  `git diff HEAD -- ${file.filePath}`,
-                  { cwd: codepath },
-                  (error, stdout, stderr) => {
-                    if (error) {
-                      reject(error);
-                    }
-                    if (stderr) {
-                      reject(stderr);
-                    }
-                    file.gitDiff = stdout;
-                    resolve(file);
-                  }
-                );
-              });
-            });
+      Promise.all(gitDiffPromises)
+        .then((result) => {
+          const addedFiles = [];
+          const modifiedFiles = [];
+          const deletedFiles = [];
 
-            Promise.all(gitDiffPromises)
-              .then((result) => {
-                const addedFiles = [];
-                const modifiedFiles = [];
-                const deletedFiles = [];
+          for (const file of result) {
+            const fullFilePath = path.join(config.codeBasePath, file.filePath);
+            if(!isInvalidFile(fullFilePath, config)) {
+              const { filePath, status, gitDiff } = file;
 
-                for (const file of result) {
-                  const fullFilePath = path.join(
-                    config.codeBasePath,
-                    file.filePath
-                  );
-                  if (!isInvalidFile(fullFilePath, config)) {
-                    const { filePath, status, gitDiff } = file;
-
-                    switch (status) {
-                      case "A":
-                        addedFiles.push({
-                          filePath: path.join(config.codeBasePath, filePath),
-                          gitDiff,
-                          status,
-                        });
-                        break;
-                      case "M":
-                        modifiedFiles.push({
-                          filePath: path.join(config.codeBasePath, filePath),
-                          gitDiff,
-                          status,
-                        });
-                        break;
-                      case "D":
-                        deletedFiles.push({
-                          filePath: path.join(config.codeBasePath, filePath),
-                          gitDiff,
-                          status,
-                        });
-                        break;
-                    }
-                  }
-                }
-
-                resolve({ addedFiles, modifiedFiles, deletedFiles });
-              })
-              .catch((error) => reject(error));
+              switch (status) {
+                case 'A':
+                  addedFiles.push({
+                    filePath: path.join(config.codeBasePath, filePath),
+                    gitDiff,
+                    status,
+                  });
+                  break;
+                case 'M':
+                  modifiedFiles.push({
+                    filePath: path.join(config.codeBasePath, filePath),
+                    gitDiff,
+                    status,
+                  });
+                  break;
+                case 'D':
+                  deletedFiles.push({
+                    filePath: path.join(config.codeBasePath, filePath),
+                    gitDiff,
+                    status,
+                  });
+                  break;
+              }
+            }
           }
-        );
-      }
-    );
+
+          resolve({ addedFiles, modifiedFiles, deletedFiles });
+        })
+        .catch((error) => reject(error));
+    });
   });
 }
 module.exports = {
@@ -410,5 +366,7 @@ module.exports = {
   splitFiles,
   writeResponsesToFile,
   writePreviewMarkdownToFile,
-  getChangedFilesWithStatus,
+  getChangedFilesWithStatus
 };
+
+"""

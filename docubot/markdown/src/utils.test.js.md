@@ -1,40 +1,7 @@
-Summary:
-This file contains tests for various utility functions used in the larger application.
+The given code is a test suite for a set of utility functions that are used for working with OpenAI's GPT-3 language model. The functions include `countTokens`, which counts the number of tokens in a given text string using the GPT-3 tokenizer, `compileCompletionPrompts`, which compiles a set of completion prompts based on a given template and set of prompts, `getCompletionModelBasedOnTokenSize`, which returns the appropriate GPT-3 model based on the number of tokens in a given text string, `getEstimatedPricing`, which returns the estimated cost of using a given GPT-3 model for a given number of tokens, and `generateCostSummary`, which generates a summary of the estimated costs for a set of files that are to be processed using the GPT-3 model.
 
-Import statements:
-- countTokens
-- compileCompletionPrompts
-- getCompletionModelBasedOnTokenSize
-- getEstimatedPricing
-- generateCostSummary
-- fs
-- Handlebars
-- GPT3Tokenizer
+The code imports the necessary dependencies, including the `utils` module that contains the utility functions, the `fs` module for file system operations, and the `Handlebars` module for working with templates. It also uses the `gpt3-tokenizer` module to tokenize text using the GPT-3 tokenizer.
 
-Script Summary:
-This file contains tests for various utility functions used in the larger application. The tests cover functions that count the number of tokens in a sentence, determine the appropriate GPT-3 model based on token size, estimate pricing for GPT-3 models, and generate a cost summary for a list of files.
+The test suite includes tests for each of the utility functions, with the exception of `compileCompletionPrompts` and `generateCostSummary`, which are marked as TODOs and are not yet implemented. The tests use various input values to ensure that the functions return the expected output.
 
-Internal Functions:
-None
-
-External Functions:
-- countTokens(content: string): Promise&lt;number&gt;
-  - This function takes in a string and returns the number of tokens in the string.
-- compileCompletionPrompts(filePath: string, prompt: string, options: object): Promise&lt;string&gt;
-  - This function takes in a file path, a prompt, and an options object and returns a compiled prompt string.
-- getCompletionModelBasedOnTokenSize(tokenCount: number): string | null
-  - This function takes in a token count and returns the appropriate GPT-3 model based on the token count.
-- getEstimatedPricing(model: string, tokenCount: number): string | null
-  - This function takes in a GPT-3 model and a token count and returns the estimated pricing for the model and token count.
-- generateCostSummary(files: array): string
-  - This function takes in an array of files and returns a cost summary for the files.
-
-Interaction Summary:
-This file does not interact with the larger application directly, but it tests utility functions that are used in other parts of the application.
-
-Developer Questions:
-- What is the purpose of the GPT3Tokenizer and how is it used in the countTokens function?
-- What is the purpose of the Handlebars library and how is it used in the compileCompletionPrompts function?
-- What is the format of the options object passed to the compileCompletionPrompts function?
-- What is the expected output format of the generateCostSummary function?
-- What is the purpose of the TODO comments in the code and what needs to be done to address them?
+Overall, the code is designed to provide a set of utility functions for working with OpenAI's GPT-3 language model, and the test suite ensures that these functions are working as expected. The `generateCostSummary` function is intended to provide a summary of the estimated costs for processing a set of files using the GPT-3 model, which could be useful for managing costs when working with large amounts of text data.

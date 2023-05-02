@@ -12,8 +12,25 @@ const {
   writePreviewMarkdownToFile,
 } = require("./fileProcessor");
 const { generateCostSummary } = require("./utils");
+const { createChangeLog } = require("./createChangeLog");
 
-async function main(filePath, full, dirPath) {
+const readline = require("readline");
+
+async function readInput(prompt) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(prompt, (answer) => {
+      rl.close();
+      resolve(answer);
+    });
+  });
+}
+
+async function main({ skipCompletion, update, filePath, full, dirPath }) {
   const codeBasePath = process.env.CODE_BASE_PATH || process.cwd();
   const folderPath = filePath
     ? path.dirname(filePath)
@@ -38,63 +55,69 @@ async function main(filePath, full, dirPath) {
     process.exit(1);
   }
 
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+  if (update) {
+    console.log(`Documenting Changed Files...`);
+    const { addedFiles, modifiedFiles, deletedFiles } =
+      await getChangedFilesWithStatus(folderPath, finalConfig);
+    // const changeLogSummary = await createChangeLog({ addedFiles, modifiedFiles, deletedFiles });
 
-  rl.question(
-    "Do you want to preview the the prompts before proceeding? (y/n): ",
-    async (previewAnswer) => {
-      if (previewAnswer.toLowerCase() === "y") {
-        // Write the final prompts as markdown files to the markdown directory so you can preview them
-        await writePreviewMarkdownToFile(allFilesToProcess, finalConfig);
-        console.log(
-          "Preview markdown files written to your docubot folder. Please review them and make any changes you want in the prompts/templates folders. When you are ready, run this script again to proceed with the magic ..."
-        );
-      }
+    // Combine addedFiles and modifiedFiles into a single array
+    const updatedFiles = [...addedFiles, ...modifiedFiles];
 
-      const summary = generateCostSummary(allFilesToProcess);
+    // Filter allFilesToProcess to only include items with a filePath value that matches the objects in the updatedFiles array
+    allFilesToProcess = allFilesToProcess.filter((file) =>
+      updatedFiles.some((updatedFile) => updatedFile.filePath === file.filePath)
+    );
 
-      console.log("\nSummary:");
-      console.log(summary);
+    console.log("Done updating changed files.");
+  }
 
-      rl.question("Do you want to proceed? (y/n): ", async (answer) => {
-        if (answer.toLowerCase() === "y") {
-          // Add your code to proceed with the operation here
-          console.log("Proceeding with magic...");
-          // Split files into skipCompletionFiles and filesForDocumentation
-          // This removes any files that dont need to be sent to GPT-3 but you still want to be memorized
-          const [skipCompletionFiles, filesForDocumentation] =
-            splitFiles(allFilesToProcess);
-
-          // Send skipCompletionFiles directly to writeResponsesToFile
-          console.log("Writing markdown files directly...");
-          await writeResponsesToFile(skipCompletionFiles, [], finalConfig);
-
-          console.log(
-            `Sending ${filesForDocumentation.length} files for documentation...`
-          );
-          // Send filesForDocumentation to get OpenAI docs
-          await batchCompletionProcessor(filesForDocumentation, finalConfig);
-
-          console.log(
-            `Memorizing ${allFilesToProcess.length} new documentation files... that was easy!`
-          );
-          // Process markdown folder and get Embeddings
-          const embeddings = await batchEmbeddingsProcessor(
-            allFilesToProcess,
-            finalConfig
-          );
-
-          console.log(`All files memorized!`);
-        } else {
-          console.log("Documenation canceled.");
-        }
-        rl.close();
-      });
-    }
+  const previewAnswer = await readInput(
+    "Do you want to preview the the prompts before proceeding? (y/n): "
   );
+
+  if (previewAnswer.toLowerCase() === "y") {
+    await writePreviewMarkdownToFile(allFilesToProcess, finalConfig);
+    console.log(
+      "Preview markdown files written to your docubot folder. Please review them and make any changes you want in the prompts/templates folders. When you are ready, run this script again to proceed with the magic ..."
+    );
+  }
+
+  const summary = generateCostSummary(allFilesToProcess);
+
+  console.log("\nSummary:");
+  console.log(summary);
+
+  const answer = await readInput("Do you want to proceed? (y/n): ");
+
+  if (answer.toLowerCase() === "y") {
+    console.log("Proceeding with magic...");
+    const [skipCompletionFiles, filesForDocumentation] =
+      splitFiles(allFilesToProcess);
+
+    console.log("Writing markdown files directly...");
+    await writeResponsesToFile(skipCompletionFiles, [], finalConfig);
+
+    if (!skipCompletion) {
+      console.log(
+        `Sending ${filesForDocumentation.length} files for documentation...`
+      );
+      await batchCompletionProcessor(filesForDocumentation, finalConfig);
+    }
+
+    console.log(
+      `Memorizing ${allFilesToProcess.length} new documentation files... that was easy!`
+    );
+    const embeddings = await batchEmbeddingsProcessor(
+      allFilesToProcess,
+      finalConfig
+    );
+
+    console.log(`All files memorized!`);
+  } else {
+    console.log("Documenation canceled.");
+  }
+  await new Promise((resolve) => process.stdin.once("end", resolve));
 }
 
 module.exports = {
@@ -102,5 +125,7 @@ module.exports = {
 };
 
 if (require.main === module) {
-  main();
+  main({
+    skipCompletion: true, // Default if ran from command line
+  });
 }

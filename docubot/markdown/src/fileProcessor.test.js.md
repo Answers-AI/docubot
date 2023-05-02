@@ -1,26 +1,7 @@
-Summary:
-This file contains code for processing files in a given directory, identifying their type, and determining if they are valid or not based on certain criteria. It also includes tests for the fileProcessor, getFileType, and isInvalidFile functions.
+The given code is a Node.js module that processes files in a codebase directory and identifies their file type based on their extension. It also checks if the file is invalid based on certain criteria such as invalid paths, file types, and file names. The module uses Jest for testing and mocks certain dependencies such as the file system module and a module for getting template files. 
 
-Import statements:
-The file imports the fs and path modules from Node.js, as well as the fileProcessor, getFileType, and isInvalidFile functions from another file in the same directory. It also imports the getTemplateFilesModule from another file and mocks it for testing purposes.
+The main functionality of the module is provided by the `fileProcessor` function, which takes a directory path and a configuration object as input and returns an array of objects representing the processed files. Each object contains information about the file such as its path, file type, prompt, template, and skipCompletion flag. 
 
-Script Summary:
-The file defines a config object with various properties related to file processing, such as the base path for the code, invalid paths, invalid file types, and file types with associated prompts and templates. It then defines tests for the fileProcessor, getFileType, and isInvalidFile functions.
+The `getFileType` function is used to determine the file type of a given file path based on the configuration object. The `isInvalidFile` function is used to check if a file is invalid based on the configuration object's invalidPaths, invalidFileTypes, and invalidFileNames properties. 
 
-Internal Functions:
-- None
-
-External Functions:
-- fileProcessor: This function takes a directory path and a config object as arguments and returns an array of objects representing valid files in the directory. Each object includes the file path, type, prompt, template, and skipCompletion properties.
-- getFileType: This function takes a file path and a config object as arguments and returns an object representing the file type. The object includes the type, prompt, template, and skipCompletion properties.
-- isInvalidFile: This function takes a file path and a config object as arguments and returns a boolean indicating whether the file is invalid based on the config object's invalidPaths, invalidFileTypes, and invalidFileNames properties.
-
-Interaction Summary:
-This file interacts with other files in the same directory, as well as the Node.js fs and path modules. It also interacts with a getTemplateFiles module, which is mocked for testing purposes.
-
-Developer Questions:
-- What other file types can be added to the config object's fileTypes property?
-- How can the fileProcessor function be modified to handle subdirectories?
-- What happens if a file's type is not defined in the config object's fileTypes property?
-- How can the isInvalidFile function be modified to handle additional criteria for invalid files?
-- Are there any known issues with the mocked getTemplateFiles module?
+Notable features of the code include the use of Jest for testing and the mocking of certain dependencies to isolate the code being tested. The code also uses promises for asynchronous operations and the path module for working with file paths.

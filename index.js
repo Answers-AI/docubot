@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 const docubot = require("./src/docubot.js");
-const fs = require("fs");
-const path = require("path");
-const readline = require("readline");
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 
@@ -40,9 +37,9 @@ const argv = yargs(hideBin(process.argv))
 
       // Start Docubot
       console.log("Starting Docubot...");
-      console.log("file:", argv.file);
-      console.log("full:", argv.full);
-      console.log("dir:", argv.dir);
+      // console.log("file:", argv.file);
+      // console.log("full:", argv.full);
+      // console.log("dir:", argv.dir);
       const filePath = argv.file;
       const fullProcess = argv.full;
       const dirPath = argv.dir;
@@ -53,6 +50,19 @@ const argv = yargs(hideBin(process.argv))
       await docubot.main(filePath, fullProcess, dirPath); // Pass the file path, fullProcess flag, and dirPath to the main function
     }
   )
+  .command("mem", "Memorize to Pinecone", {}, async () => {
+    console.log("Starting Docubot with 'mem' command...");
+    await docubot.main({
+      skipCompletion: true,
+    }); // Pass true to skip the batchCompletionProcessor
+  })
+  .command("update", "Update changed files", {}, async () => {
+    console.log("Starting Docubot with 'update' command...");
+    await docubot.main({
+      skipCompletion: false,
+      update: true,
+    }); // Call the updateChangedFiles function
+  })
   .command("list", "List all saved files", {}, () => {
     // List all saved files
     console.log("Listing all saved files...");
