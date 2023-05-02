@@ -3,7 +3,7 @@ Code:
 """
 {
   "name": "docubot",
-  "version": "0.2.3",
+  "version": "0.2.2",
   "description": "A handy little documenting bot for your code",
   "main": "index.js",
   "scripts": {

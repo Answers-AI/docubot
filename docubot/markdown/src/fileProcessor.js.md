@@ -1,29 +1,11 @@
-This JavaScript code is a file processing module that utilizes Node.js, OpenAI, Pinecone, and other libraries to generate documentation for a given codebase. The module is designed to work with vector databases and provides various functions to process files, generate summaries, and create embeddings for the documentation.
+This JavaScript code is a part of a documentation generation tool that utilizes Node.js, OpenAI, Pinecone, and other libraries. The code processes files and directories, generates summaries and embeddings for the content, and stores the results in a Pinecone vector database. The main functions and features of the code include:
 
-Key features and functions of the code include:
+1. `fileProcessor`: Recursively processes files and directories, filtering out invalid files based on the provided configuration.
+2. `getFileData`: Retrieves file data, including file type, tokens, model, and cost, and compiles completion prompts for the file.
+3. `batchCompletionProcessor`: Processes files in batches, generating responses using OpenAI's GPT model and writing the responses to markdown files.
+4. `batchEmbeddingsProcessor`: Processes files in batches, generating embeddings for the file contents and upserting the embeddings to Pinecone.
+5. `writeResponsesToFile` and `writePreviewMarkdownToFile`: Write generated responses and preview prompts to markdown files.
+6. `getChangedFilesWithStatus`: Retrieves the list of changed files in a Git repository, filtering out invalid files based on the provided configuration.
+7. Utility functions like `getFileType`, `isInvalidFile`, and `splitFiles` to assist in processing and filtering files.
 
-1. `fileProcessor`: Recursively processes files in a given directory, filtering out invalid files and directories based on the provided configuration. It compiles completion prompts for each valid file and calculates the token count, model, and cost for the file.
-
-2. `isInvalidFile`: Determines if a file is invalid based on the provided configuration, checking for invalid paths, file types, and file names.
-
-3. `getFileType`: Identifies the file type based on the file path and configuration, returning an object containing the type, prompt, template, and skipCompletion flag.
-
-4. `batchCompletionProcessor`: Processes files in batches, generating responses for each batch and writing the responses to the corresponding markdown files.
-
-5. `batchEmbeddingsProcessor`: Processes files in batches, generating embeddings for each file and upserting the embeddings to Pinecone.
-
-6. `writeResponsesToFile`: Writes the generated responses to the corresponding markdown files.
-
-7. `writePreviewMarkdownToFile`: Writes the preview prompts to the corresponding markdown files.
-
-8. `upsertEmbeddingsToPinecone`: Upserts the generated embeddings to Pinecone, a vector database.
-
-9. `generateResponses`: Generates responses for the given files using the OpenAI API.
-
-10. `generateEmbeddings`: Generates embeddings for the given file contents using the OpenAI API.
-
-11. `splitFiles`: Splits the files into two arrays, one containing files with the skipCompletion flag set to true and the other containing the rest of the files.
-
-12. `getChangedFilesWithStatus`: Retrieves the changed files with their status (added, modified, or deleted) using Git commands.
-
-The module exports these functions, making them available for use in other parts of the application.
+The code is designed to work with various file types and configurations, making it a versatile solution for generating documentation and storing it in a vector database.

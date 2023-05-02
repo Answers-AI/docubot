@@ -1,5 +1,11 @@
-This code is a Node.js command-line interface (CLI) tool that utilizes OpenAI's GPT-3 language model to generate documentation for code. The tool is called Docubot and is designed to document code files or folders. The code imports several Node.js modules, including fs, path, readline, and yargs, and also imports two custom modules, docubot.js and initialize.js. 
+The given code is a Node.js command-line interface (CLI) tool that utilizes the Docubot library to document code. The CLI is defined using the yargs library, which allows for easy parsing of command-line arguments. The CLI has four commands: "start", "mem", "update", and "list". 
 
-The code defines several CLI commands using yargs, including "start", "mem", "update", and "list". The "start" command is used to start Docubot and generate documentation for a specified file or folder. The "mem" command is used to memorize the generated documentation to Pinecone, a vector database service. The "update" command is used to update previously generated documentation for changed files. The "list" command is used to list all saved files. 
+The "start" command is used to start Docubot and document code. It takes in three options: "file", "full", and "dir". The "file" option specifies the path to the file to be documented, the "full" option runs the full process on all files, and the "dir" option specifies the path to the directory containing files to be documented. Only one of these options can be passed at a time. 
 
-The code also exports an object containing the parsed command-line arguments using yargs. Overall, this code provides a useful tool for generating and managing documentation for code files and folders, and its integration with Pinecone makes it particularly relevant for vector databases.
+The "mem" command is used to memorize code to Pinecone, which is a vector database. It skips the batchCompletionProcessor and only runs the main function. 
+
+The "update" command is used to update changed files. It runs the main function with the "update" flag set to true, which calls the updateChangedFiles function. 
+
+The "list" command is used to list all saved files, but this functionality has not been implemented yet. 
+
+Overall, this code provides a CLI tool for documenting code using Docubot and allows for easy customization through command-line arguments. The "mem" command also allows for easy integration with Pinecone, a vector database.
