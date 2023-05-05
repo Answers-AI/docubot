@@ -117,40 +117,16 @@ const config = (CODE_BASE_PATH) => {
         fileTypes: [".md", ".mdx", ".txt", "LICENSE.md", "LICENSE"],
         skipCompletion: true,
       },
-      // react: {
-      //   fileTypes: ['.jsx', '.tsx'],
-      //   prompt: 'react.prompt',
-      //   template: 'react.md'
-      // },
-      // api: {
-      //   pathIncludes: ['/api/', '/routes/', '/controllers/', '/services/'],
-      //   prompt: 'api.prompt',
-      //   template: 'api.md'
-      // },
-      // config: {
-      //   fileTypes: [
-      //     '.json',
-      //     '.yaml',
-      //     '.yml',
-      //     '.toml',
-      //     '.ini',
-      //     '.env',
-      //     '.env.example',
-      //     '.docubotrc'
-      //   ],
-      //   prompt: 'config.prompt',
-      //   template: 'config.md'
-      // },
-      // script: {
-      //   fileTypes: ['.js', '.ts'],
-      //   prompt: 'script.prompt',
-      //   template: 'script.md'
-      // },
-      // contentModel: {
-      //   pathIncludes: ['content_types'],
-      //   prompt: 'contentModel.prompt',
-      //   template: 'contentModel.md'
-      // },
+      react: {
+        fileTypes: ['.jsx', '.tsx'],
+        prompt: 'react.prompt',
+        template: 'react.md'
+      },
+      api: {
+        pathIncludes: ['/api/', '/routes/', '/controllers/', '/services/'],
+        prompt: 'api.prompt',
+        template: 'api.md'
+      },
       default: {
         prompt: "default.prompt",
         template: "default.md",

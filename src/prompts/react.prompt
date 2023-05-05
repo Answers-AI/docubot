@@ -1,13 +1,18 @@
-Document how the provided React file functions as part of a larger application.
-"""
+Analyze the code file and provide a comprehensive summary, including the following:
+
+1. Explain how the file interacts with other components within the application.
+2. Determine if the component is for server-side or client-side usage.
+3. Create a markdown table summarizing all the props utilized by this component.
+4. Elaborate on user interaction with the component and its state management.
+5. Identify and describe all sub-components, along with their relationships to the main component.
+6. Compile a list of potential questions developers may have while working with this file.
+7. Enumerate any known issues or bugs related to the component, as well as any pending tasks or improvements.
+
+Please provide the analysis in a concise and informative manner, focusing on the most critical aspects of the file.
+
+Code """
 {{fileContents}}
 """
-Describe how the file interacts with other components in the application.
-Identify whether the component is a server or client-side component.
-Create a markdown table listing all the props used by this component.
-Provide detailed descriptions of user interaction and how the component handles state.
-Describe all sub-components and their interactions with this component.
-List out any questions developers may have while working on this codebase that relate to this file.
-List out any known issues or bugs with the component and any todo items that need to be addressed.
+
 Template:
 {{templates.react}}
