@@ -1,3 +1,0 @@
-The given code is a configuration file for VSCode's debugger, which is used to run and debug Node.js applications. The file contains three different configurations, each with a different command, name, and request type. The commands are used to run different scripts in the project, such as starting the Docubot application, memorizing data, and updating the application. The configurations are set up to run in a node-terminal type, which allows the user to run the commands in a terminal window within VSCode.
-
-There are no notable features or functions related to vector databases in this code.

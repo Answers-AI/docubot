@@ -1,5 +1,0 @@
-The given code is a collection of functions that are used to generate completion prompts for OpenAI's GPT-3 and GPT-4 models. The code includes functions for reading files, compiling Handlebars templates, and counting the number of tokens in a given text. The code also includes functions for determining the appropriate model to use based on the number of tokens in the prompt and estimating the cost of the completion request. 
-
-The `generateCostSummary` function is used to calculate the total cost of the completion requests based on the number of tokens and the model used. The function takes an array of files as input and returns a summary of the cost for each model and the number of files skipped due to incomplete prompts. 
-
-Overall, the code provides a useful set of functions for generating completion prompts for OpenAI's GPT-3 and GPT-4 models and estimating the cost of the completion requests. The code is written in JavaScript and utilizes Node.js, OpenAI, Pinecone, VSCode, and MacOS.
