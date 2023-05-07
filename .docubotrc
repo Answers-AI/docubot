@@ -1,18 +1,21 @@
-const path = require('path');
+const path = require("path");
 
 const config = (CODE_BASE_PATH) => {
-  const PACKAGE_JSON_PATH = path.join(CODE_BASE_PATH, 'package.json');
-  const PINECONE_INDEX_NAME = process.env.DOCUBOT_PINECONE_INDEX_NAME || 'docubot';
-  const PINECONE_NAMESPACE = process.env.DOCUBOT_PINECONE_NAMESPACE || 'default';
-  const DOCUBOT_DIRECTORY_NAME = process.env.DOCUBOT_DIRECTORY_NAME || 'docubot';
+  const PACKAGE_JSON_PATH = path.join(CODE_BASE_PATH, "package.json");
+  const PINECONE_INDEX_NAME =
+    process.env.DOCUBOT_PINECONE_INDEX_NAME || "docubot";
+  const PINECONE_NAMESPACE =
+    process.env.DOCUBOT_PINECONE_NAMESPACE || "default";
+  const DOCUBOT_DIRECTORY_NAME =
+    process.env.DOCUBOT_DIRECTORY_NAME || "docubot";
   const DOCUBOT_DIRECTORY = path.join(CODE_BASE_PATH, DOCUBOT_DIRECTORY_NAME);
   const MARKDOWN_DIRECTORY =
-    process.env.MARKDOWN_DIRECTORY || path.join(DOCUBOT_DIRECTORY, 'markdown');
+    process.env.MARKDOWN_DIRECTORY || path.join(DOCUBOT_DIRECTORY, "markdown");
   const PROMPTS_FILE_PATH =
-    process.env.PROMPTS_FILE_PATH || path.join(DOCUBOT_DIRECTORY, 'prompts');
+    process.env.PROMPTS_FILE_PATH || path.join(DOCUBOT_DIRECTORY, "prompts");
 
   const TEMPLATE_FILE_PATH =
-    process.env.TEMPLATE_FILE_PATH || path.join(DOCUBOT_DIRECTORY, 'templates');
+    process.env.TEMPLATE_FILE_PATH || path.join(DOCUBOT_DIRECTORY, "templates");
   return {
     codeBasePath: CODE_BASE_PATH,
     pineconeIndexName: PINECONE_INDEX_NAME,
@@ -24,110 +27,135 @@ const config = (CODE_BASE_PATH) => {
     templateFilePath: TEMPLATE_FILE_PATH,
     packageJsonPath: PACKAGE_JSON_PATH,
     invalidPaths: [
-      'node_modules',
-      'dist',
-      'build',
-      'coverage',
-      'public',
-      'static',
-      'assets',
-      'images',
-      'img',
-      '.nextjs',
-      '.next',
-      '.git',
-      'generated',
-      '.yarn',
-      'patches',
-      DOCUBOT_DIRECTORY
+      "node_modules",
+      "dist",
+      "build",
+      "coverage",
+      "public",
+      "static",
+      "assets",
+      "images",
+      "img",
+      ".nextjs",
+      ".next",
+      ".git",
+      "generated",
+      ".yarn",
+      "patches",
+      "docubot/templates",
+      "docubot/markdown",
+      "docubot/prompts",
     ],
     invalidFileTypes: [
-      '.prompt',
-      '.csv',
-      '.tsv',
-      '.log',
-      '.docx',
-      '.xls',
-      '.xlsx',
-      '.ppt',
-      '.pptx',
-      '.svg',
-      '.png',
-      '.jpg',
-      '.jpeg',
-      '.gif',
-      '.bmp',
-      '.tiff',
-      '.tif',
-      '.ico',
-      '.mp3',
-      '.mp4',
-      '.wav',
-      '.wma',
-      '.avi',
-      '.mov',
-      '.mpg',
-      '.mpeg',
-      '.zip',
-      '.rar',
-      '.7z',
-      '.tar',
-      '.gz',
-      '.dmg',
-      '.iso',
-      '.exe',
-      '.bin',
-      '.pkg',
-      '.deb',
-      '.rpm',
-      '.env',
-      '.lock'
+      ".prompt",
+      ".csv",
+      ".tsv",
+      ".log",
+      ".docx",
+      ".xls",
+      ".xlsx",
+      ".ppt",
+      ".pptx",
+      ".svg",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".bmp",
+      ".tiff",
+      ".tif",
+      ".ico",
+      ".mp3",
+      ".mp4",
+      ".wav",
+      ".wma",
+      ".avi",
+      ".mov",
+      ".mpg",
+      ".mpeg",
+      ".zip",
+      ".rar",
+      ".7z",
+      ".tar",
+      ".gz",
+      ".dmg",
+      ".iso",
+      ".exe",
+      ".bin",
+      ".pkg",
+      ".deb",
+      ".rpm",
+      ".env",
+      ".lock",
+      ".hbs",
     ],
-    invalidFileNames: ['pnpm-lock.yaml', 'package-lock.json', 'app_pairs.yml', '.env'],
+    invalidFileNames: [
+      "pnpm-lock.yaml",
+      "package-lock.json",
+      "app_pairs.yml",
+      ".env",
+      "cypress.config.js",
+      "cypress.env.json",
+      "docker-compose.yml",
+      "docker",
+      "Dockerfile",
+      ".DS_STORE",
+      ".DS_Store",
+      ".npmrc",
+      ".gitignore",
+      ".gitattributes",
+      ".eslintignore",
+      ".eslintrc",
+      ".eslintrc.js",
+      "vite-env.d.ts",
+      "vite.config.ts",
+      "pnpm-workspace.yaml",
+      ".prettierrc",
+    ],
     fileTypes: {
       docs: {
-        fileTypes: ['.md', '.mdx', '.txt', 'LICENSE.md', 'LICENSE'],
-        skipCompletion: true
+        fileTypes: [".md", ".mdx", ".txt", "LICENSE.md", "LICENSE"],
+        skipCompletion: true,
       },
-      react: {
-        fileTypes: ['.jsx', '.tsx'],
-        prompt: 'react.prompt',
-        template: 'react.md'
-      },
-      api: {
-        pathIncludes: ['/api/', '/routes/', '/controllers/', '/services/'],
-        prompt: 'api.prompt',
-        template: 'api.md'
-      },
-      config: {
-        fileTypes: [
-          '.json',
-          '.yaml',
-          '.yml',
-          '.toml',
-          '.ini',
-          '.env',
-          '.env.example',
-          '.docubotrc'
-        ],
-        prompt: 'config.prompt',
-        template: 'config.md'
-      },
-      script: {
-        fileTypes: ['.js', '.ts'],
-        prompt: 'script.prompt',
-        template: 'script.md'
-      },
-      contentModel: {
-        pathIncludes: ['content_types'],
-        prompt: 'contentModel.prompt',
-        template: 'contentModel.md'
-      },
+      // react: {
+      //   fileTypes: ['.jsx', '.tsx'],
+      //   prompt: 'react.prompt',
+      //   template: 'react.md'
+      // },
+      // api: {
+      //   pathIncludes: ['/api/', '/routes/', '/controllers/', '/services/'],
+      //   prompt: 'api.prompt',
+      //   template: 'api.md'
+      // },
+      // config: {
+      //   fileTypes: [
+      //     '.json',
+      //     '.yaml',
+      //     '.yml',
+      //     '.toml',
+      //     '.ini',
+      //     '.env',
+      //     '.env.example',
+      //     '.docubotrc'
+      //   ],
+      //   prompt: 'config.prompt',
+      //   template: 'config.md'
+      // },
+      // script: {
+      //   fileTypes: ['.js', '.ts'],
+      //   prompt: 'script.prompt',
+      //   template: 'script.md'
+      // },
+      // contentModel: {
+      //   pathIncludes: ['content_types'],
+      //   prompt: 'contentModel.prompt',
+      //   template: 'contentModel.md'
+      // },
       default: {
-        prompt: 'default.prompt',
-        template: 'default.md'
-      }
-    }
+        prompt: "default.prompt",
+        template: "default.md",
+      },
+    },
   };
 };
 

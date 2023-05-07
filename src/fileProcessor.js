@@ -1,61 +1,78 @@
-const fs = require('fs').promises;
-const path = require('path');
-const { PineconeClient } = require('@pinecone-database/pinecone');
+const fs = require("fs").promises;
+const path = require("path");
+const { exec } = require("child_process");
+const { PineconeClient } = require("@pinecone-database/pinecone");
 const client = new PineconeClient();
 
 const {
   countTokens,
   compileCompletionPrompts,
   getCompletionModelBasedOnTokenSize,
-  getEstimatedPricing
-} = require('./utils');
-const { createChatCompletion, createEmbedding } = require('./openai');
+  getEstimatedPricing,
+} = require("./utils");
+const { createChatCompletion, createEmbedding } = require("./openai");
 
-const fileProcessor = async (dirPath, config) => {
+const getFileData = async (filePath, config) => {
+  if (!isInvalidFile(filePath, config)) {
+    const fileTypeObj = getFileType(filePath, config);
+    let tokens = 0;
+    let model = "";
+    let cost = 0;
+    const completionObj = await compileCompletionPrompts(
+      filePath,
+      fileTypeObj.prompt,
+      fileTypeObj.skipCompletion,
+      config
+    );
+
+    if (!fileTypeObj.skipCompletion) {
+      tokens = await countTokens(completionObj.fullPrompt);
+      model = getCompletionModelBasedOnTokenSize(tokens);
+      cost = getEstimatedPricing(model, tokens);
+    }
+
+    // TODO: Send to the embedding api for classification
+    return {
+      filePath,
+      type: fileTypeObj.type,
+      prompt: fileTypeObj.prompt,
+      template: fileTypeObj.template,
+      skipCompletion: fileTypeObj.skipCompletion,
+      fullPrompt: completionObj?.fullPrompt,
+      fileContents: completionObj?.fileContents,
+      tokens,
+      model,
+      cost,
+    };
+  } else {
+    console.log(`Skipping file: ${filePath}`);
+    return null;
+  }
+};
+
+const fileProcessor = async (iPath, config) => {
   const filesData = [];
-  const files = await fs.readdir(dirPath);
+  const isDirectory = (await fs.stat(iPath)).isDirectory();
+  const files = await (isDirectory ? fs.readdir(iPath) : [iPath]);
+  // console.log({ iPath, isDirectory, files });
 
   for (const file of files) {
-    const filePath = path.join(dirPath, file);
+    const filePath = isDirectory ? path.join(iPath, file) : file;
     const fileStats = await fs.stat(filePath);
 
     if (fileStats.isDirectory()) {
-      if (!config.invalidPaths.some((invalidPath) => filePath.includes(invalidPath))) {
+      if (
+        !config.invalidPaths.some((invalidPath) =>
+          filePath.includes(invalidPath)
+        )
+      ) {
         filesData.push(...(await fileProcessor(filePath, config)));
       }
     } else {
-      if (!isInvalidFile(filePath, config)) {
-        const fileTypeObj = getFileType(filePath, config);
-        let tokens = 0;
-        let model = '';
-        let cost = 0;
-        const completionObj = await compileCompletionPrompts(
-          filePath,
-          fileTypeObj.prompt,
-          fileTypeObj.skipCompletion,
-          config
-        );
-        if (!fileTypeObj.skipCompletion) {
-          tokens = await countTokens(completionObj.fullPrompt);
-          model = getCompletionModelBasedOnTokenSize(tokens);
-          cost = getEstimatedPricing(model, tokens);
-        }
-
+      const fileData = await getFileData(filePath, config);
+      if (fileData) {
         // TODO: Send to the embedding api for classification
-        filesData.push({
-          filePath,
-          type: fileTypeObj.type,
-          prompt: fileTypeObj.prompt,
-          template: fileTypeObj.template,
-          skipCompletion: fileTypeObj.skipCompletion,
-          fullPrompt: completionObj?.fullPrompt,
-          fileContents: completionObj?.fileContents,
-          tokens,
-          model,
-          cost
-        });
-      } else {
-        console.log(`Skipping file: ${filePath}`);
+        filesData.push(fileData);
       }
     }
   }
@@ -66,25 +83,27 @@ const fileProcessor = async (dirPath, config) => {
 const isInvalidFile = (filePath, config) => {
   const ext = path.extname(filePath);
   const fileParentDir = path.dirname(filePath);
-  const cond1 = config.invalidPaths.some(
-    (invalidPath) => fileParentDir === path.join(config.codeBasePath, invalidPath)
+  const cond1 = config.invalidPaths.some((invalidPath) =>
+    fileParentDir.includes(invalidPath)
   );
+
   const cond2 = config.invalidFileTypes.includes(ext);
   const cond3 = config.invalidFileNames.includes(path.basename(filePath));
 
-  if(cond1 || cond2 || cond3) {
+  if (cond1 || cond2 || cond3) {
     console.log(`Skipping file: ${filePath}`, cond1, cond2, cond3);
     return true;
   }
+
   return false;
 };
 
 const getFileContents = async (filePath) => {
   try {
-    const contents = await fs.readFile(`${filePath}.md`, 'utf-8');
+    const contents = await fs.readFile(`${filePath}.md`, "utf-8");
     return {
       contents,
-      filePath
+      filePath,
     };
   } catch (error) {
     console.error(`Error reading file: ${filePath}`, error);
@@ -101,7 +120,7 @@ const getFileType = (filePath, config) => {
         type,
         prompt: fileType.prompt,
         template: fileType.template,
-        skipCompletion: fileType.skipCompletion || false
+        skipCompletion: fileType.skipCompletion || false,
       };
     }
 
@@ -113,16 +132,16 @@ const getFileType = (filePath, config) => {
         type,
         prompt: fileType.prompt,
         template: fileType.template,
-        skipCompletion: fileType.skipCompletion || false
+        skipCompletion: fileType.skipCompletion || false,
       };
     }
   }
 
   return {
-    type: 'default',
+    type: "default",
     prompt: config.fileTypes.default.prompt,
     template: config.fileTypes.default.template,
-    skipCompletion: config.fileTypes.default.skipCompletion || false
+    skipCompletion: config.fileTypes.default.skipCompletion || false,
   };
 };
 
@@ -136,7 +155,7 @@ const batchCompletionProcessor = async (files, config) => {
 };
 
 const getFilePathWithReplacedBase = (file, config) => {
-  const relativePath = file?.filePath?.replace(config.codeBasePath, '');
+  const relativePath = file?.filePath?.replace(config.codeBasePath, "");
   return path.join(config.markdownDirectory, relativePath);
 };
 
@@ -144,7 +163,9 @@ const batchEmbeddingsProcessor = async (allFilesToProcess, config) => {
   const batchSize = 20;
   for (let i = 0; i < allFilesToProcess.length; i += batchSize) {
     const batch = allFilesToProcess.slice(i, i + batchSize);
-    const batchWithReplacedBase = batch.map((file) => getFilePathWithReplacedBase(file, config));
+    const batchWithReplacedBase = batch.map((file) =>
+      getFilePathWithReplacedBase(file, config)
+    );
 
     const fileContentsPromises = batchWithReplacedBase.map(getFileContents);
     const fileContentsArray = await Promise.all(fileContentsPromises);
@@ -154,14 +175,17 @@ const batchEmbeddingsProcessor = async (allFilesToProcess, config) => {
   }
 };
 
+// TODO: Add Docusauraus support
 const writeResponsesToFile = async (files, responses, config) => {
   for (let i = 0; i < files.length; i++) {
     const filePath = path.join(
       config.markdownDirectory,
-      files[i].filePath.replace(config.codeBasePath, '')
+      files[i].filePath.replace(config.codeBasePath, "")
     );
     const fileDir = path.dirname(filePath);
-    const fileContent = responses[i]?.data?.choices[0]?.message?.content || files[i]?.fileContents;
+    const fileContent =
+      responses[i]?.data?.choices[0]?.message?.content ||
+      files[i]?.fileContents;
     await fs.mkdir(fileDir, { recursive: true });
     await fs.writeFile(`${filePath}.md`, fileContent);
     console.log(`Documentation written to: ${filePath}`);
@@ -171,21 +195,22 @@ const writeResponsesToFile = async (files, responses, config) => {
 const writePreviewMarkdownToFile = async (files, config) => {
   for (let i = 0; i < files.length; i++) {
     const filePath = path.join(
-      config.markdownDirectory,
-      files[i].filePath.replace(config.codeBasePath, '')
+      config.docubotDirectory,
+      "preview",
+      files[i].filePath.replace(config.codeBasePath, "")
     );
     const fileDir = path.dirname(filePath);
     const fileContent = files[i]?.fullPrompt || files[i]?.fileContents;
     await fs.mkdir(fileDir, { recursive: true });
-    await fs.writeFile(`${filePath}.md`, fileContent);
-    console.log(`Documentation written to: ${filePath}`);
+    await fs.writeFile(`${filePath}.md`, fileContent, "utf-8");
+    console.log(`Preview Prompts written to: ${filePath}`);
   }
 };
 
 const upsertEmbeddingsToPinecone = async (embeddings, config) => {
   await client.init({
     apiKey: process.env.PINECONE_API_KEY,
-    environment: process.env.PINECONE_ENVIRONMENT
+    environment: process.env.PINECONE_ENVIRONMENT,
   });
   const index = client.Index(config.pineconeIndexName);
   for (let i = 0; i < embeddings.length; i++) {
@@ -193,20 +218,23 @@ const upsertEmbeddingsToPinecone = async (embeddings, config) => {
     if (embedding?.response) {
       const relativeFilePath = path
         .relative(config.markdownDirectory, embedding.filePath)
-        .replace('.md.md', '.md'); // TODO: This is a hack to fix the double extension
+        .replace(".md.md", ".md"); // TODO: This is a hack to fix the double extension
       const fullCodePath = path.join(config.codeBasePath, relativeFilePath);
       // TODO: This only works for npm projects. This should work with all types of projects.
       // Only using it to namespace the repo and its versions
-      const packageJson = require(path.join(config.codeBasePath, 'package.json'));
+      const packageJson = require(path.join(
+        config.codeBasePath,
+        "package.json"
+      ));
 
-      const content = await fs.readFile(`${embedding.filePath}.md`, 'utf-8');
-      const codeContent = await fs.readFile(fullCodePath, 'utf-8');
+      const content = await fs.readFile(`${embedding.filePath}.md`, "utf-8");
+      const codeContent = await fs.readFile(fullCodePath, "utf-8");
       // TODO: have different tokens for code and text content
       const tokens = embedding?.response?.data?.usage?.total_tokens;
 
       const vectorId = `docubot_${packageJson.name}_v${
         packageJson.version
-      }_${relativeFilePath.replace(/\//g, '_')}`;
+      }_${relativeFilePath.replace(/\//g, "_")}`;
 
       // Send the embedding to Pinecone
       await index
@@ -223,15 +251,15 @@ const upsertEmbeddingsToPinecone = async (embeddings, config) => {
                   filePath: relativeFilePath,
                   source: `docubot`,
                   repo: `${packageJson.name}-v${packageJson.version}`,
-                  code: codeContent
-                }
-              }
-            ]
-          }
+                  code: codeContent,
+                },
+              },
+            ],
+          },
         })
         .catch((error) => {
-          console.error('Error upserting embeddings to Pinecone:', error);
-          console.error('Error Response:', error?.response?.data);
+          console.error("Error upserting embeddings to Pinecone:", error);
+          console.error("Error Response:", error?.response?.data);
         });
 
       console.log(
@@ -242,12 +270,14 @@ const upsertEmbeddingsToPinecone = async (embeddings, config) => {
 };
 
 const generateResponses = async (files, gptModel) => {
-  return await Promise.all(files.map((file) => createChatCompletion(file.model, file.fullPrompt)));
+  return await Promise.all(
+    files.map((file) => createChatCompletion(file.model, file.fullPrompt))
+  );
 };
 const generateEmbeddings = async (fileContentsArray) => {
   const embeddingPromises = fileContentsArray
     .filter((item) => item?.contents !== null)
-    .map((item) => createEmbedding('text-embedding-ada-002', item));
+    .map((item) => createEmbedding("text-embedding-ada-002", item));
 
   return await Promise.all(embeddingPromises);
 };
@@ -267,6 +297,110 @@ const splitFiles = (files) => {
   return [skipCompletionFiles, otherFiles];
 };
 
+async function getChangedFilesWithStatus(codepath, config) {
+  return new Promise((resolve, reject) => {
+    exec(
+      "git rev-parse --verify HEAD",
+      { cwd: codepath },
+      (error, stdout, stderr) => {
+        if (error && stderr.includes("fatal: Needed a single revision")) {
+          // No commit history found, returning empty result.
+          return resolve({
+            addedFiles: [],
+            modifiedFiles: [],
+            deletedFiles: [],
+          });
+        } else if (error || stderr) {
+          // Some other error occurred, rejecting the promise.
+          return reject(
+            new Error(`Error verifying HEAD: ${stderr || error.message}`)
+          );
+        }
+
+        exec(
+          `git diff --name-status HEAD ${codepath}`,
+          { cwd: codepath },
+          (error, stdout, stderr) => {
+            if (error) {
+              reject(error);
+            }
+            if (stderr) {
+              reject(stderr);
+            }
+            const fileStatusList = stdout.split("\n").filter(Boolean);
+            const changedFiles = fileStatusList.map((fileStatus) => {
+              const [status, filePath] = fileStatus.split("\t");
+              return { filePath, status };
+            });
+
+            const gitDiffPromises = changedFiles.map(async (file) => {
+              return new Promise((resolve, reject) => {
+                exec(
+                  `git diff HEAD -- ${file.filePath}`,
+                  { cwd: codepath },
+                  (error, stdout, stderr) => {
+                    if (error) {
+                      reject(error);
+                    }
+                    if (stderr) {
+                      reject(stderr);
+                    }
+                    file.gitDiff = stdout;
+                    resolve(file);
+                  }
+                );
+              });
+            });
+
+            Promise.all(gitDiffPromises)
+              .then((result) => {
+                const addedFiles = [];
+                const modifiedFiles = [];
+                const deletedFiles = [];
+
+                for (const file of result) {
+                  const fullFilePath = path.join(
+                    config.codeBasePath,
+                    file.filePath
+                  );
+                  if (!isInvalidFile(fullFilePath, config)) {
+                    const { filePath, status, gitDiff } = file;
+
+                    switch (status) {
+                      case "A":
+                        addedFiles.push({
+                          filePath: path.join(config.codeBasePath, filePath),
+                          gitDiff,
+                          status,
+                        });
+                        break;
+                      case "M":
+                        modifiedFiles.push({
+                          filePath: path.join(config.codeBasePath, filePath),
+                          gitDiff,
+                          status,
+                        });
+                        break;
+                      case "D":
+                        deletedFiles.push({
+                          filePath: path.join(config.codeBasePath, filePath),
+                          gitDiff,
+                          status,
+                        });
+                        break;
+                    }
+                  }
+                }
+
+                resolve({ addedFiles, modifiedFiles, deletedFiles });
+              })
+              .catch((error) => reject(error));
+          }
+        );
+      }
+    );
+  });
+}
 module.exports = {
   fileProcessor,
   batchCompletionProcessor,
@@ -276,4 +410,5 @@ module.exports = {
   splitFiles,
   writeResponsesToFile,
   writePreviewMarkdownToFile,
+  getChangedFilesWithStatus,
 };

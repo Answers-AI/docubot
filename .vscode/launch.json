@@ -11,13 +11,16 @@
             "type": "node-terminal"
         },
         {
-            "type": "node",
+            "command": "npm run docubot mem",
+            "name": "Docubot Memorize",
             "request": "launch",
-            "name": "Docubot: Launch Files API",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/src/filesApi.js"
-        }
+            "type": "node-terminal"
+        },
+        {
+            "command": "npm run docubot update",
+            "name": "Docubot Update",
+            "request": "launch",
+            "type": "node-terminal"
+        },
     ]
 }

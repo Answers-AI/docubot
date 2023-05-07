@@ -81,7 +81,9 @@ const config = (CODE_BASE_PATH) => {
       '.deb',
       '.rpm',
       '.env',
-      '.lock'
+      '.lock',
+      '.DS_Store',
+      '.gitignore',
     ],
     invalidFileNames: ['pnpm-lock.yaml', 'package-lock.json', 'app_pairs.yml', '.env'],
     fileTypes: {

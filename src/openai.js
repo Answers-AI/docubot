@@ -6,7 +6,7 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-const createChatCompletion = async (gptModel, prompt, temperature = 0.2) => {
+const createChatCompletion = async (gptModel, prompt, temperature = 0) => {
   // TODO: Make the system prompt dynamic
   if (!prompt) {
     return null;

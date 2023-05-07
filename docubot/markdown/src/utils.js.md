@@ -1,43 +1,5 @@
-Summary:
-This file contains functions for compiling completion prompts, counting tokens, estimating pricing, and generating cost summaries. It imports dependencies such as fs, path, GPT3Tokenizer, Handlebars, and a custom function getTemplateFiles. 
+The given code is a collection of functions that are used to generate completion prompts for OpenAI's GPT-3 and GPT-4 models. The code includes functions for reading files, compiling Handlebars templates, and counting the number of tokens in a given text. The code also includes functions for determining the appropriate model to use based on the number of tokens in the prompt and estimating the cost of the completion request. 
 
-Import statements:
-- fs: a Node.js module for working with the file system
-- path: a Node.js module for working with file and directory paths
-- GPT3Tokenizer: a third-party library for tokenizing text using the GPT-3 language model
-- Handlebars: a third-party library for templating
-- getTemplateFiles: a custom function for getting template files
+The `generateCostSummary` function is used to calculate the total cost of the completion requests based on the number of tokens and the model used. The function takes an array of files as input and returns a summary of the cost for each model and the number of files skipped due to incomplete prompts. 
 
-Script Summary:
-This script exports several functions for working with completion prompts and estimating pricing. It also contains a function for generating a cost summary based on the completion prompts.
-
-Internal Functions:
-- templateCompiler: a function that takes in content and returns a compiled Handlebars template
-- fileReader: an async function that reads a file and returns its contents as a string
-- countTokens: a function that takes in content and returns the number of tokens in the content
-- compileCompletionPrompts: an async function that compiles a completion prompt based on a file path, prompt, and template files
-- getCompletionModelBasedOnTokenSize: a function that takes in the number of tokens and returns the appropriate GPT model to use
-- getEstimatedPricing: a function that takes in the GPT model and number of tokens and returns the estimated cost
-- generateCostSummary: a function that takes in an array of files and returns a summary of the cost for each GPT model and the number of skipped files
-
-External Functions:
-- countTokens: a function that takes in content and returns the number of tokens in the content
-- compileCompletionPrompts: an async function that compiles a completion prompt based on a file path, prompt, and template files
-- getCompletionModelBasedOnTokenSize: a function that takes in the number of tokens and returns the appropriate GPT model to use
-- getEstimatedPricing: a function that takes in the GPT model and number of tokens and returns the estimated cost
-- generateCostSummary: a function that takes in an array of files and returns a summary of the cost for each GPT model and the number of skipped files
-
-Interaction Summary:
-This file could interact with other parts of the application by providing functions for working with completion prompts and estimating pricing. It could be used in conjunction with other modules to build a larger application.
-
-Developer Questions:
-- What is the purpose of the GPT3Tokenizer library and how is it used in this file?
-- How does the compileCompletionPrompts function work and what are the parameters it takes in?
-- What is the purpose of the getCompletionModelBasedOnTokenSize function and how is it used in the application?
-- What is the format of the files array that is passed into the generateCostSummary function?
-- How can the pricing rates for the GPT models be updated in the getEstimatedPricing function?
-- What is the purpose of the TODO comments in the file and how should they be addressed?
-
-Known Issues and Todo Items:
-- The getEstimatedPricing function only calculates the cost based on context tokens, not response tokens.
-- The TODO comments in the file need to be addressed.
+Overall, the code provides a useful set of functions for generating completion prompts for OpenAI's GPT-3 and GPT-4 models and estimating the cost of the completion requests. The code is written in JavaScript and utilizes Node.js, OpenAI, Pinecone, VSCode, and MacOS.
