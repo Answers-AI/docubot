@@ -2,8 +2,8 @@ const path = require('path');
 
 const config = (CODE_BASE_PATH) => {
   const PACKAGE_JSON_PATH = path.join(CODE_BASE_PATH, 'package.json');
-  const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME || 'answers-development';
-  const PINECONE_NAMESPACE = process.env.PINECONE_NAMESPACE || 'answerai';
+  const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME || 'docubot';
+  const PINECONE_NAMESPACE = process.env.PINECONE_NAMESPACE || 'default';
   const DOCUBOT_DIRECTORY_NAME = process.env.DOCUBOT_DIRECTORY_NAME || 'docubot';
   const DOCUBOT_DIRECTORY = path.join(CODE_BASE_PATH, DOCUBOT_DIRECTORY_NAME);
   const MARKDOWN_DIRECTORY =

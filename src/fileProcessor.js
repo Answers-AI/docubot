@@ -43,7 +43,12 @@ const fileProcessor = async (dirPath, config) => {
         if (!fileTypeObj.skipCompletion) {
           tokens = await countTokens(completionObj.fullPrompt);
           model = getCompletionModelBasedOnTokenSize(tokens);
+          if(!model) {
+            console.log(`Skipping file: ${filePath} due to token size: ${tokens}`);
+            continue;
+          }
           cost = getEstimatedPricing(model, tokens);
+          console.log(`Estimated cost for ${filePath}: ${cost}`)
         }
 
         // TODO: Send to the embedding api for classification
@@ -78,7 +83,7 @@ const isInvalidFile = (filePath, config) => {
   const cond3 = config.invalidFileNames.includes(path.basename(filePath));
 
   if (cond1 || cond2 || cond3) {
-    console.log(`Skipping file: ${filePath}`, cond1, cond2, cond3);
+    console.log(`Skipping files confogured in .dcoubotrc: ${filePath}`);
     return true;
   }
   return false;
