@@ -20,7 +20,8 @@
             "command": "npm run docubot update",
             "name": "Docubot Update",
             "request": "launch",
-            "type": "node-terminal"
+            "type": "node-terminal",
+            "args": ["--update"] // Add this line to pass the update flag as an argument
         },
     ]
 }
