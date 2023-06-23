@@ -52,7 +52,6 @@ const argv = yargs(hideBin(process.argv))
         filePath,
         fullProcess,
         dirPath,
-        update,
       }); // Pass the file path, fullProcess flag, and dirPath to the main function
     }
   )
