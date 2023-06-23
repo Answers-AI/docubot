@@ -101,3 +101,6 @@ docubot list
 
 - Add ability to select files to use in completion
 - Show the user how many tokens they can have in the completion based on what files, model, and prompt they have selected
+
+### Oberservations:
+- I noticed that getting the correct folder structure is hard to get. I want to add a directory tree to the documentation that gets sent with each request for debugging and teaching purposes

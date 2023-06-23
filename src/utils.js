@@ -58,7 +58,7 @@ const compileCompletionPrompts = async (
 // TODO: Calculate the true token size based on the prompt and
 const getCompletionModelBasedOnTokenSize = (tokens) => {
   // If-else statement to determine which model to use
-  if (tokens >= 3800 && tokens <= 7200) {
+  if (tokens >= 3800 && tokens <= 15000) {
     return "gpt-4";
   } else if (tokens >= 0 && tokens <= 3800) {
     return "gpt-3.5-turbo";

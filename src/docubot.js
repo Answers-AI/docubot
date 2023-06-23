@@ -10,6 +10,7 @@ const {
   splitFiles,
   writeResponsesToFile,
   writePreviewMarkdownToFile,
+  getChangedFilesWithStatus,
 } = require("./fileProcessor");
 const { generateCostSummary } = require("./utils");
 
@@ -72,7 +73,9 @@ async function main({
       updatedFiles.some((updatedFile) => updatedFile.filePath === file.filePath)
     );
 
-    console.log("Done updating changed files.");
+    console.log("Done finding changed files.");
+
+    console.log("allFilesToProcess:", allFilesToProcess);
   }
 
   const previewAnswer = await readInput(

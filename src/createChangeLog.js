@@ -1,5 +1,5 @@
 const { getChangedFiles } = require("./fileProcessor");
-const { createChatCompletion } = require('./openai');
+const { createChatCompletion } = require("./openai");
 const {
   countTokens,
   compileCompletionPrompts,
@@ -7,7 +7,7 @@ const {
   getEstimatedPricing,
 } = require("./utils");
 
-const createChangeLog = async ({addedFiles, modifiedFiles, deletedFiles }) => {
+const createChangeLog = async ({ addedFiles, modifiedFiles, deletedFiles }) => {
   const summaryArray = [];
   for (const file of modifiedFiles) {
     const { filePath, gitDiff } = file;
@@ -19,21 +19,20 @@ const createChangeLog = async ({addedFiles, modifiedFiles, deletedFiles }) => {
     const gptModel = getCompletionModelBasedOnTokenSize(tokens);
     const temperature = 0; // Adjust the temperature value as needed
 
-    const completion = await createChatCompletion(gptModel, prompt, temperature);
+    const completion = await createChatCompletion(
+      gptModel,
+      prompt,
+      temperature
+    );
     summaryArray.push({
       filePath,
       summary: completion?.data.choices[0]?.message?.content,
-    })
-    // Process the Summary Array
-    
+    });
+    // TODO: Process the Summary Array
+
     // ...
   }
-    
-
-
 };
-
-
 
 module.exports = {
   createChangeLog,
