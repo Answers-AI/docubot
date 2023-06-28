@@ -7,7 +7,12 @@ const {
   getEstimatedPricing,
 } = require("./utils");
 
-const createChangeLog = async ({ addedFiles, modifiedFiles, deletedFiles }) => {
+const createChangeLog = async ({
+  addedFiles,
+  modifiedFiles,
+  deletedFiles,
+  config,
+}) => {
   const summaryArray = [];
   for (const file of modifiedFiles) {
     const { filePath, gitDiff } = file;
@@ -19,11 +24,12 @@ const createChangeLog = async ({ addedFiles, modifiedFiles, deletedFiles }) => {
     const gptModel = getCompletionModelBasedOnTokenSize(tokens);
     const temperature = 0; // Adjust the temperature value as needed
 
-    const completion = await createChatCompletion(
+    const completion = await createChatCompletion({
       gptModel,
       prompt,
-      temperature
-    );
+      temperature,
+      config,
+    });
     summaryArray.push({
       filePath,
       summary: completion?.data.choices[0]?.message?.content,

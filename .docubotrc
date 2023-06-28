@@ -16,6 +16,13 @@ const config = (CODE_BASE_PATH) => {
 
   const TEMPLATE_FILE_PATH =
     process.env.TEMPLATE_FILE_PATH || path.join(DOCUBOT_DIRECTORY, "templates");
+  const ANSWERAI_API_KEY = process.env.DOCUBOT_ANSWERAI_API_KEY;
+  const ANSWERAI_EMBEDDINGS_URL =
+    process.env.DOCUBOT_ANSWERAI_EMBEDDINGS_URL ||
+    "https://theanswer.ai/api/codebase/embeddings";
+  const ANSWERAI_CHAT_COMPLETION_URL =
+    process.env.DOCUBOT_ANSWERAI_CHAT_COMPLETION_URL ||
+    "https://theanswer.ai/api/ai/code-completion";
   return {
     codeBasePath: CODE_BASE_PATH,
     pineconeIndexName: PINECONE_INDEX_NAME,
@@ -26,12 +33,19 @@ const config = (CODE_BASE_PATH) => {
     promptsFilePath: PROMPTS_FILE_PATH,
     templateFilePath: TEMPLATE_FILE_PATH,
     packageJsonPath: PACKAGE_JSON_PATH,
+    answerAI: {
+      apiKey: ANSWERAI_API_KEY,
+      embeddingsUrl: ANSWERAI_EMBEDDINGS_URL,
+      chatCompletionUrl: ANSWERAI_CHAT_COMPLETION_URL,
+    },
     invalidPaths: [
       "node_modules",
       "dist",
       "build",
       "coverage",
       "public",
+      "reports",
+      ".nyc_output",
       "static",
       "assets",
       "images",
@@ -41,6 +55,7 @@ const config = (CODE_BASE_PATH) => {
       ".git",
       "generated",
       ".yarn",
+      ".turbo",
       "patches",
       "docubot/templates",
       "docubot/markdown",
