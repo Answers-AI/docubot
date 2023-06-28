@@ -438,7 +438,6 @@ const callAnswerAiEmbeddingApi = async ({
   codeContent,
   filePath,
 }) => {
-  console.log("using answerAI embeddings", config.answerAI.embeddingsUrl);
   const resp = await axios
     .post(
       config.answerAI.embeddingsUrl,

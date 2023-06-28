@@ -12,10 +12,6 @@ const createAnswerAiChatCompletion = async ({
   temperature,
   config,
 }) => {
-  console.log(
-    "using answerAI chat completion",
-    config.answerAI.chatCompletionUrl
-  );
   const completion = await axios
     .post(
       config.answerAI.chatCompletionUrl,
