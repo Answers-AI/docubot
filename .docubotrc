@@ -44,8 +44,6 @@ const config = (CODE_BASE_PATH) => {
       "build",
       "coverage",
       "public",
-      "reports",
-      ".nyc_output",
       "static",
       "assets",
       "images",
@@ -55,11 +53,8 @@ const config = (CODE_BASE_PATH) => {
       ".git",
       "generated",
       ".yarn",
-      ".turbo",
       "patches",
-      "docubot/templates",
-      "docubot/markdown",
-      "docubot/prompts",
+      DOCUBOT_DIRECTORY,
     ],
     invalidFileTypes: [
       ".prompt",
@@ -100,72 +95,55 @@ const config = (CODE_BASE_PATH) => {
       ".pkg",
       ".deb",
       ".rpm",
-      ".env",
       ".lock",
-      ".hbs",
     ],
     invalidFileNames: [
       "pnpm-lock.yaml",
       "package-lock.json",
       "app_pairs.yml",
       ".env",
-      "cypress.config.js",
-      "cypress.env.json",
-      "docker-compose.yml",
-      "docker",
-      "Dockerfile",
-      ".DS_STORE",
       ".DS_Store",
-      ".npmrc",
       ".gitignore",
-      ".gitattributes",
-      ".eslintignore",
-      ".eslintrc",
-      ".eslintrc.js",
-      "vite-env.d.ts",
-      "vite.config.ts",
-      "pnpm-workspace.yaml",
-      ".prettierrc",
     ],
     fileTypes: {
       docs: {
         fileTypes: [".md", ".mdx", ".txt", "LICENSE.md", "LICENSE"],
         skipCompletion: true,
       },
-      // react: {
-      //   fileTypes: ['.jsx', '.tsx'],
-      //   prompt: 'react.prompt',
-      //   template: 'react.md'
-      // },
-      // api: {
-      //   pathIncludes: ['/api/', '/routes/', '/controllers/', '/services/'],
-      //   prompt: 'api.prompt',
-      //   template: 'api.md'
-      // },
-      // config: {
-      //   fileTypes: [
-      //     '.json',
-      //     '.yaml',
-      //     '.yml',
-      //     '.toml',
-      //     '.ini',
-      //     '.env',
-      //     '.env.example',
-      //     '.docubotrc'
-      //   ],
-      //   prompt: 'config.prompt',
-      //   template: 'config.md'
-      // },
-      // script: {
-      //   fileTypes: ['.js', '.ts'],
-      //   prompt: 'script.prompt',
-      //   template: 'script.md'
-      // },
-      // contentModel: {
-      //   pathIncludes: ['content_types'],
-      //   prompt: 'contentModel.prompt',
-      //   template: 'contentModel.md'
-      // },
+      react: {
+        fileTypes: [".jsx", ".tsx"],
+        prompt: "react.prompt",
+        template: "react.md",
+      },
+      api: {
+        pathIncludes: ["/api/", "/routes/", "/controllers/", "/services/"],
+        prompt: "api.prompt",
+        template: "api.md",
+      },
+      config: {
+        fileTypes: [
+          ".json",
+          ".yaml",
+          ".yml",
+          ".toml",
+          ".ini",
+          ".env",
+          ".env.example",
+          ".docubotrc",
+        ],
+        prompt: "config.prompt",
+        template: "config.md",
+      },
+      script: {
+        fileTypes: [".js", ".ts"],
+        prompt: "script.prompt",
+        template: "script.md",
+      },
+      contentModel: {
+        pathIncludes: ["content_types"],
+        prompt: "contentModel.prompt",
+        template: "contentModel.md",
+      },
       default: {
         prompt: "default.prompt",
         template: "default.md",

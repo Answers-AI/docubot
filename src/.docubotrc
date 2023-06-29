@@ -95,16 +95,15 @@ const config = (CODE_BASE_PATH) => {
       ".pkg",
       ".deb",
       ".rpm",
-      ".env",
       ".lock",
-      ".DS_Store",
-      ".gitignore",
     ],
     invalidFileNames: [
       "pnpm-lock.yaml",
       "package-lock.json",
       "app_pairs.yml",
       ".env",
+      ".DS_Store",
+      ".gitignore",
     ],
     fileTypes: {
       docs: {
