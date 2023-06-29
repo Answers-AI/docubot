@@ -13,6 +13,20 @@ const {
 } = require("./utils");
 const { createChatCompletion, createEmbedding } = require("./openai");
 
+const getGitCommit = async () => {
+  const gitCommit = await new Promise((resolve, reject) => {
+    exec("git rev-parse --short HEAD", (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        reject(error);
+      }
+      resolve(stdout.trim());
+    });
+  });
+
+  return gitCommit;
+};
+
 const getFileData = async (filePath, config) => {
   if (!isInvalidFile(filePath, config)) {
     const fileTypeObj = getFileType(filePath, config);
@@ -160,7 +174,7 @@ const getFilePathWithReplacedBase = (file, config) => {
   return path.join(config.markdownDirectory, relativePath);
 };
 
-const prepareData = async ({ file, packageJson, config }) => {
+const prepareData = async ({ file, packageJson, config, gitCommit }) => {
   const fileWithReplaceBase = getFilePathWithReplacedBase(file, config);
   const { contents: content, filePath } = await getFileContents(
     fileWithReplaceBase
@@ -172,7 +186,7 @@ const prepareData = async ({ file, packageJson, config }) => {
   const fullCodePath = path.join(config.codeBasePath, relativeFilePath);
 
   const codeContent = await fs.readFile(fullCodePath, "utf-8");
-  const repo = `${packageJson.name}-v${packageJson.version}`;
+  const repo = `${packageJson.name}-v${packageJson.version}-${gitCommit}`;
 
   return {
     repo,
@@ -195,7 +209,7 @@ const generateAndUpsertEmbedding = async ({
   try {
     const response = await createEmbedding({
       model: "text-embedding-ada-002",
-      input: file.contents,
+      input: content,
     });
 
     const vectorId = `docubot_${repo}_${filePath.replace(/\//g, "_")}`;
@@ -226,32 +240,34 @@ const generateAndUpsertEmbedding = async ({
       });
 
     console.log(
-      `Upserted vector: ${vectorId} with source: 'docubot', repo: '${packageJson.name}-v${packageJson.version}'`
+      `Upserted vector: ${vectorId} with source: 'docubot', repo: '${repo}'`
     );
   } catch (error) {
     console.error("Error calling openai.createEmbedding:", error);
   }
 };
 
-const batchPineconeEmbeddingsProcessor = async (
-  allFilesToProcess,
+const batchPineconeEmbeddingsProcessor = async ({
+  files,
   packageJson,
-  config
-) => {
+  config,
+  gitCommit,
+}) => {
   await client.init({
     apiKey: process.env.PINECONE_API_KEY,
     environment: process.env.PINECONE_ENVIRONMENT,
   });
   const index = client.Index(config.pineconeIndexName);
   const batchSize = 20;
-  for (let i = 0; i < allFilesToProcess.length; i += batchSize) {
-    const batch = allFilesToProcess.slice(i, i + batchSize);
+  for (let i = 0; i < files.length; i += batchSize) {
+    const batch = files.slice(i, i + batchSize);
     await Promise.all(
       batch.map(async (file) => {
         const { repo, content, codeContent, filePath } = await prepareData({
           file,
           packageJson,
           config,
+          gitCommit,
         });
         await generateAndUpsertEmbedding({
           repo,
@@ -278,6 +294,7 @@ const writeResponsesToFile = async (files, responses, config) => {
     const fileContent =
       responses[i]?.data?.choices[0]?.message?.content ||
       files[i]?.fileContents;
+
     await fs.mkdir(fileDir, { recursive: true });
     await fs.writeFile(`${filePath}.md`, fileContent);
     console.log(`Documentation written to: ${filePath}`);
@@ -464,6 +481,7 @@ const batchAnswerAiEmbeddingsProcessor = async ({
   files,
   packageJson,
   config,
+  gitCommit,
 }) => {
   const batchSize = 20;
   for (let i = 0; i < files.length; i += batchSize) {
@@ -474,6 +492,7 @@ const batchAnswerAiEmbeddingsProcessor = async ({
           file,
           packageJson,
           config,
+          gitCommit,
         });
         await callAnswerAiEmbeddingApi({
           repo,
@@ -490,17 +509,20 @@ const batchAnswerAiEmbeddingsProcessor = async ({
 
 const batchEmbeddingsProcessor = async ({ files, config }) => {
   const packageJson = require(path.join(config.codeBasePath, "package.json"));
+  const gitCommit = await getGitCommit();
   if (config.answerAI?.apiKey) {
     await batchAnswerAiEmbeddingsProcessor({
       files,
       packageJson,
       config,
+      gitCommit,
     });
   } else {
     await batchPineconeEmbeddingsProcessor({
       files,
       packageJson,
       config,
+      gitCommit,
     });
   }
 };
@@ -514,4 +536,5 @@ module.exports = {
   writeResponsesToFile,
   writePreviewMarkdownToFile,
   getChangedFilesWithStatus,
+  getGitCommit,
 };

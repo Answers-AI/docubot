@@ -1,5 +1,6 @@
 // openai-api.js
 const { Configuration, OpenAIApi } = require("openai");
+const axios = require("axios");
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -28,11 +29,7 @@ const createAnswerAiChatCompletion = async ({
       }
     )
     .catch((error) => {
-      console.error(
-        "Error in createAnswerAiChatCompletion API:",
-        error?.response?.data
-      );
-      // console.error('Error in createChatCompletion API:', error);
+      console.error("Error in createAnswerAiChatCompletion API:", error);
     });
 
   return completion;
@@ -92,26 +89,20 @@ const createChatCompletion = async ({
   }
 };
 
-const createEmbedding = async (model, file) => {
-  if (file?.contents) {
+const createEmbedding = async ({ model, input }) => {
+  if (input) {
     try {
       const response = await openai.createEmbedding({
         model,
-        input: file.contents,
+        input,
       });
 
-      return {
-        filePath: file.filePath,
-        response,
-      };
+      return response;
     } catch (error) {
       console.error("Error in createEmbedding:", error);
     }
   } else {
-    return {
-      filePath: file?.filePath,
-      response: null,
-    };
+    return null;
   }
 };
 
