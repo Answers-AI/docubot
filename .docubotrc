@@ -22,7 +22,7 @@ const config = (CODE_BASE_PATH) => {
     "https://theanswer.ai/api/codebase/embeddings";
   const ANSWERAI_CHAT_COMPLETION_URL =
     process.env.DOCUBOT_ANSWERAI_CHAT_COMPLETION_URL ||
-    "https://theanswer.ai/api/ai/code-completion";
+    "https://theanswer.ai/api/ai/chat-completion";
   return {
     codeBasePath: CODE_BASE_PATH,
     pineconeIndexName: PINECONE_INDEX_NAME,
