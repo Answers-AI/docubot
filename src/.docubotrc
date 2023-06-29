@@ -19,10 +19,10 @@ const config = (CODE_BASE_PATH) => {
   const ANSWERAI_API_KEY = process.env.DOCUBOT_ANSWERAI_API_KEY;
   const ANSWERAI_EMBEDDINGS_URL =
     process.env.DOCUBOT_ANSWERAI_EMBEDDINGS_URL ||
-    "https://theanswer.ai/api/codebase/embeddings";
+    "https://app.theanswer.ai/api/codebase/embeddings";
   const ANSWERAI_CHAT_COMPLETION_URL =
     process.env.DOCUBOT_ANSWERAI_CHAT_COMPLETION_URL ||
-    "https://theanswer.ai/api/ai/chat-completion";
+    "https://app.theanswer.ai/api/ai/chat-completion";
   return {
     codeBasePath: CODE_BASE_PATH,
     pineconeIndexName: PINECONE_INDEX_NAME,

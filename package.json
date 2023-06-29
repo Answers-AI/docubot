@@ -4,7 +4,7 @@
   "description": "A handy little documenting AI bot for your code",
   "main": "index.js",
   "scripts": {
-    "docubot": "node ./index.js start --full",
+    "docubot": "node ./index.js",
     "test": "jest"
   },
   "bin": {

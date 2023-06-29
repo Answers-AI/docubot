@@ -25,14 +25,14 @@ const argv = yargs(hideBin(process.argv))
       });
     },
     async (argv) => {
+      const filePath = argv.file;
+      let fullProcess = argv.full;
+      const dirPath = argv.dir;
+
       // Check that only one of file, full, or dir is passed
       const count = ["file", "full", "dir"].filter((opt) => argv[opt]).length;
       if (count !== 1) {
-        console.error(
-          "Error: You must specify exactly one of --file, --full, or --dir."
-        );
-
-        process.exit(1);
+        fullProcess = true;
       }
 
       // Start Docubot
@@ -40,9 +40,7 @@ const argv = yargs(hideBin(process.argv))
       // console.log("file:", argv.file);
       // console.log("full:", argv.full);
       // console.log("dir:", argv.dir);
-      const filePath = argv.file;
-      const fullProcess = argv.full;
-      const dirPath = argv.dir;
+
       console.log(
         `Finding what code to document based on the .docubotrc file... update the .docubotrc file to change it to work best for your repo`
       );
