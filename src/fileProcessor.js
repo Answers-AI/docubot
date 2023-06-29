@@ -3,6 +3,7 @@ const path = require("path");
 const { exec } = require("child_process");
 const { PineconeClient } = require("@pinecone-database/pinecone");
 const client = new PineconeClient();
+const axios = require("axios");
 
 const {
   countTokens,
@@ -11,6 +12,20 @@ const {
   getEstimatedPricing,
 } = require("./utils");
 const { createChatCompletion, createEmbedding } = require("./openai");
+
+const getGitCommit = async () => {
+  const gitCommit = await new Promise((resolve, reject) => {
+    exec("git rev-parse --short HEAD", (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        reject(error);
+      }
+      resolve(stdout.trim());
+    });
+  });
+
+  return gitCommit;
+};
 
 const getFileData = async (filePath, config) => {
   if (!isInvalidFile(filePath, config)) {
@@ -145,11 +160,11 @@ const getFileType = (filePath, config) => {
   };
 };
 
-const batchCompletionProcessor = async (files, config) => {
+const batchCompletionProcessor = async ({ files, config }) => {
   const batchSize = 5;
   for (let i = 0; i < files.length; i += batchSize) {
     const batch = files.slice(i, i + batchSize);
-    const responses = await generateResponses(batch);
+    const responses = await generateResponses(batch, config);
     await writeResponsesToFile(batch, responses, config);
   }
 };
@@ -159,19 +174,112 @@ const getFilePathWithReplacedBase = (file, config) => {
   return path.join(config.markdownDirectory, relativePath);
 };
 
-const batchEmbeddingsProcessor = async (allFilesToProcess, config) => {
-  const batchSize = 20;
-  for (let i = 0; i < allFilesToProcess.length; i += batchSize) {
-    const batch = allFilesToProcess.slice(i, i + batchSize);
-    const batchWithReplacedBase = batch.map((file) =>
-      getFilePathWithReplacedBase(file, config)
+const prepareData = async ({ file, packageJson, config, gitCommit }) => {
+  const fileWithReplaceBase = getFilePathWithReplacedBase(file, config);
+  const { contents: content, filePath } = await getFileContents(
+    fileWithReplaceBase
+  );
+  const relativeFilePath = path
+    .relative(config.markdownDirectory, filePath)
+    .replace(".md.md", ".md");
+
+  const fullCodePath = path.join(config.codeBasePath, relativeFilePath);
+
+  const codeContent = await fs.readFile(fullCodePath, "utf-8");
+  const repo = `${packageJson.name}-v${packageJson.version}-${gitCommit}`;
+
+  return {
+    repo,
+    content,
+    codeContent,
+    filePath: relativeFilePath,
+    fullCodePath,
+    packageJson,
+  };
+};
+
+const generateAndUpsertEmbedding = async ({
+  config,
+  repo,
+  index,
+  content,
+  codeContent,
+  filePath,
+}) => {
+  try {
+    const response = await createEmbedding({
+      model: "text-embedding-ada-002",
+      input: content,
+    });
+
+    const vectorId = `docubot_${repo}_${filePath.replace(/\//g, "_")}`;
+
+    await index
+      .upsert({
+        upsertRequest: {
+          namespace: config.pineconeNamespace,
+          vectors: [
+            {
+              id: vectorId,
+              values: response.data.data[0].embedding,
+              metadata: {
+                text: content,
+                tokens: response?.data?.usage?.total_tokens,
+                filePath,
+                source: `codebase`,
+                repo,
+                code: codeContent,
+              },
+            },
+          ],
+        },
+      })
+      .catch((error) => {
+        console.error("Error upserting embeddings to Pinecone:", error);
+        console.error("Error Response:", error?.response?.data);
+      });
+
+    console.log(
+      `Upserted vector: ${vectorId} with source: 'docubot', repo: '${repo}'`
     );
+  } catch (error) {
+    console.error("Error calling openai.createEmbedding:", error);
+  }
+};
 
-    const fileContentsPromises = batchWithReplacedBase.map(getFileContents);
-    const fileContentsArray = await Promise.all(fileContentsPromises);
-
-    const embeddings = await generateEmbeddings(fileContentsArray);
-    await upsertEmbeddingsToPinecone(embeddings, config);
+const batchPineconeEmbeddingsProcessor = async ({
+  files,
+  packageJson,
+  config,
+  gitCommit,
+}) => {
+  await client.init({
+    apiKey: process.env.PINECONE_API_KEY,
+    environment: process.env.PINECONE_ENVIRONMENT,
+  });
+  const index = client.Index(config.pineconeIndexName);
+  const batchSize = 20;
+  for (let i = 0; i < files.length; i += batchSize) {
+    const batch = files.slice(i, i + batchSize);
+    await Promise.all(
+      batch.map(async (file) => {
+        const { repo, content, codeContent, filePath } = await prepareData({
+          file,
+          packageJson,
+          config,
+          gitCommit,
+        });
+        await generateAndUpsertEmbedding({
+          repo,
+          content,
+          codeContent,
+          filePath,
+          config,
+          index,
+          packageJson,
+        });
+      })
+    );
   }
 };
 
@@ -186,6 +294,7 @@ const writeResponsesToFile = async (files, responses, config) => {
     const fileContent =
       responses[i]?.data?.choices[0]?.message?.content ||
       files[i]?.fileContents;
+
     await fs.mkdir(fileDir, { recursive: true });
     await fs.writeFile(`${filePath}.md`, fileContent);
     console.log(`Documentation written to: ${filePath}`);
@@ -207,79 +316,16 @@ const writePreviewMarkdownToFile = async (files, config) => {
   }
 };
 
-const upsertEmbeddingsToPinecone = async (embeddings, config) => {
-  await client.init({
-    apiKey: process.env.PINECONE_API_KEY,
-    environment: process.env.PINECONE_ENVIRONMENT,
-  });
-  const index = client.Index(config.pineconeIndexName);
-  for (let i = 0; i < embeddings.length; i++) {
-    const embedding = embeddings[i];
-    if (embedding?.response) {
-      const relativeFilePath = path
-        .relative(config.markdownDirectory, embedding.filePath)
-        .replace(".md.md", ".md"); // TODO: This is a hack to fix the double extension
-      const fullCodePath = path.join(config.codeBasePath, relativeFilePath);
-      // TODO: This only works for npm projects. This should work with all types of projects.
-      // Only using it to namespace the repo and its versions
-      const packageJson = require(path.join(
-        config.codeBasePath,
-        "package.json"
-      ));
-
-      const content = await fs.readFile(`${embedding.filePath}.md`, "utf-8");
-      const codeContent = await fs.readFile(fullCodePath, "utf-8");
-      // TODO: have different tokens for code and text content
-      const tokens = embedding?.response?.data?.usage?.total_tokens;
-
-      const vectorId = `docubot_${packageJson.name}_v${
-        packageJson.version
-      }_${relativeFilePath.replace(/\//g, "_")}`;
-
-      // Send the embedding to Pinecone
-      await index
-        .upsert({
-          upsertRequest: {
-            namespace: config.pineconeNamespace,
-            vectors: [
-              {
-                id: vectorId,
-                values: embedding.response.data.data[0].embedding,
-                metadata: {
-                  text: content,
-                  tokens,
-                  filePath: relativeFilePath,
-                  source: `docubot`,
-                  repo: `${packageJson.name}-v${packageJson.version}`,
-                  code: codeContent,
-                },
-              },
-            ],
-          },
-        })
-        .catch((error) => {
-          console.error("Error upserting embeddings to Pinecone:", error);
-          console.error("Error Response:", error?.response?.data);
-        });
-
-      console.log(
-        `Upserted vector: ${vectorId} with source: 'docubot', repo: '${packageJson.name}-v${packageJson.version}'`
-      );
-    }
-  }
-};
-
-const generateResponses = async (files, gptModel) => {
+const generateResponses = async (files, config) => {
   return await Promise.all(
-    files.map((file) => createChatCompletion(file.model, file.fullPrompt))
+    files.map((file) =>
+      createChatCompletion({
+        gptModel: file.model,
+        prompt: file.fullPrompt,
+        config,
+      })
+    )
   );
-};
-const generateEmbeddings = async (fileContentsArray) => {
-  const embeddingPromises = fileContentsArray
-    .filter((item) => item?.contents !== null)
-    .map((item) => createEmbedding("text-embedding-ada-002", item));
-
-  return await Promise.all(embeddingPromises);
 };
 
 const splitFiles = (files) => {
@@ -401,6 +447,85 @@ async function getChangedFilesWithStatus(codepath, config) {
     );
   });
 }
+
+const callAnswerAiEmbeddingApi = async ({
+  config,
+  repo,
+  content,
+  codeContent,
+  filePath,
+}) => {
+  const resp = await axios
+    .post(
+      config.answerAI.embeddingsUrl,
+      {
+        repo,
+        text: content,
+        filePath: filePath,
+        code: codeContent,
+      },
+      {
+        method: "post",
+        headers: {
+          contentType: "application/json",
+          authorization: `Bearer ${config.answerAI.apiKey}`,
+        },
+      }
+    )
+    .catch((err) => {
+      console.log("error in callAnswerAiEmbeddingApi", err.response.data);
+    });
+};
+
+const batchAnswerAiEmbeddingsProcessor = async ({
+  files,
+  packageJson,
+  config,
+  gitCommit,
+}) => {
+  const batchSize = 20;
+  for (let i = 0; i < files.length; i += batchSize) {
+    const batch = files.slice(i, i + batchSize);
+    await Promise.all(
+      batch.map(async (file) => {
+        const { repo, content, codeContent, filePath } = await prepareData({
+          file,
+          packageJson,
+          config,
+          gitCommit,
+        });
+        await callAnswerAiEmbeddingApi({
+          repo,
+          content,
+          codeContent,
+          filePath,
+          config,
+          packageJson,
+        });
+      })
+    );
+  }
+};
+
+const batchEmbeddingsProcessor = async ({ files, config }) => {
+  const packageJson = require(path.join(config.codeBasePath, "package.json"));
+  const gitCommit = await getGitCommit();
+  if (config.answerAI?.apiKey) {
+    await batchAnswerAiEmbeddingsProcessor({
+      files,
+      packageJson,
+      config,
+      gitCommit,
+    });
+  } else {
+    await batchPineconeEmbeddingsProcessor({
+      files,
+      packageJson,
+      config,
+      gitCommit,
+    });
+  }
+};
 module.exports = {
   fileProcessor,
   batchCompletionProcessor,
@@ -411,4 +536,5 @@ module.exports = {
   writeResponsesToFile,
   writePreviewMarkdownToFile,
   getChangedFilesWithStatus,
+  getGitCommit,
 };

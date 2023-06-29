@@ -63,7 +63,7 @@ async function main({
     console.log(`Documenting Changed Files...`);
     const { addedFiles, modifiedFiles, deletedFiles } =
       await getChangedFilesWithStatus(folderPath, finalConfig);
-    // const changeLogSummary = await createChangeLog({ addedFiles, modifiedFiles, deletedFiles });
+    // const changeLogSummary = await createChangeLog({ addedFiles, modifiedFiles, deletedFiles, config });
 
     // Combine addedFiles and modifiedFiles into a single array
     const updatedFiles = [...addedFiles, ...modifiedFiles];
@@ -108,16 +108,19 @@ async function main({
       console.log(
         `Sending ${filesForDocumentation.length} files for documentation...`
       );
-      await batchCompletionProcessor(filesForDocumentation, finalConfig);
+      await batchCompletionProcessor({
+        files: filesForDocumentation,
+        config: finalConfig,
+      });
     }
 
     console.log(
       `Memorizing ${allFilesToProcess.length} new documentation files... that was easy!`
     );
-    const embeddings = await batchEmbeddingsProcessor(
-      allFilesToProcess,
-      finalConfig
-    );
+    const embeddings = await batchEmbeddingsProcessor({
+      files: allFilesToProcess,
+      config: finalConfig,
+    });
 
     console.log(`All files memorized!`);
   } else {

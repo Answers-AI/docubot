@@ -22,6 +22,7 @@
   "homepage": "https://github.com/Answers-AI/docubot#readme",
   "dependencies": {
     "@pinecone-database/pinecone": "^0.0.12",
+    "axios": "^1.4.0",
     "dotenv": "^16.0.3",
     "gpt3-tokenizer": "^1.1.5",
     "handlebars": "^4.7.7",

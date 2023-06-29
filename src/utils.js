@@ -58,10 +58,8 @@ const compileCompletionPrompts = async (
 // TODO: Calculate the true token size based on the prompt and
 const getCompletionModelBasedOnTokenSize = (tokens) => {
   // If-else statement to determine which model to use
-  if (tokens >= 3800 && tokens <= 15000) {
-    return "gpt-4";
-  } else if (tokens >= 0 && tokens <= 3800) {
-    return "gpt-3.5-turbo";
+  if (tokens >= 0 && tokens <= 15000) {
+    return "gpt-3.5-turbo-16k";
   } else {
     return null;
   }
@@ -70,7 +68,7 @@ const getCompletionModelBasedOnTokenSize = (tokens) => {
 // If-else statement to determine the cost of the completion request
 // TODO: This is only calculating context tokens, not the response tokens
 const getEstimatedPricing = (model, tokens) => {
-  if (model === "gpt-3.5-turbo") {
+  if (model === "gpt-3.5-turbo" || model === "gpt-3.5-turbo-16k") {
     return ((tokens / 1000) * 0.002).toFixed(4);
   } else if (model === "gpt-4") {
     return ((tokens / 1000) * 0.06).toFixed(4);
@@ -100,7 +98,10 @@ function generateCostSummary(files) {
     if (file.model === "gpt-4") {
       gpt4Files++;
       gpt4Cost += (file.tokens / 1000) * gpt4Rate;
-    } else if (file.model === "gpt-3.5-turbo") {
+    } else if (
+      file.model === "gpt-3.5-turbo" ||
+      file.model === "gpt-3.5-turbo-16k"
+    ) {
       gpt35Files++;
       gpt35Cost += (file.tokens / 1000) * gpt35Rate;
     }
