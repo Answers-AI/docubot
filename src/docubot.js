@@ -48,7 +48,7 @@ async function main({
       path.resolve(filePath),
       finalConfig
     );
-  } else if (fullProcess) {
+  } else if (fullProcess || skipCompletion) {
     allFilesToProcess = await fileProcessor(folderPath, finalConfig);
   } else if (dirPath) {
     allFilesToProcess = await fileProcessor(dirPath, finalConfig);
@@ -78,23 +78,27 @@ async function main({
     console.log("allFilesToProcess:", allFilesToProcess);
   }
 
-  const previewAnswer = await readInput(
-    "Do you want to preview the the prompts before proceeding? (y/n): "
-  );
+  let answer = "y";
 
-  if (previewAnswer.toLowerCase() === "y") {
-    await writePreviewMarkdownToFile(allFilesToProcess, finalConfig);
-    console.log(
-      "Preview markdown files written to your docubot folder. Please review them and make any changes you want in the prompts/templates folders. When you are ready, run this script again to proceed with the magic ..."
+  if (!skipCompletion) {
+    const previewAnswer = await readInput(
+      "Do you want to preview the the prompts before proceeding? (y/n): "
     );
+
+    if (previewAnswer.toLowerCase() === "y") {
+      await writePreviewMarkdownToFile(allFilesToProcess, finalConfig);
+      console.log(
+        "Preview markdown files written to your docubot folder. Please review them and make any changes you want in the prompts/templates folders. When you are ready, run this script again to proceed with the magic ..."
+      );
+    }
+
+    const summary = generateCostSummary(allFilesToProcess);
+
+    console.log("\nSummary:");
+    console.log(summary);
+
+    answer = await readInput("Do you want to proceed? (y/n): ");
   }
-
-  const summary = generateCostSummary(allFilesToProcess);
-
-  console.log("\nSummary:");
-  console.log(summary);
-
-  const answer = await readInput("Do you want to proceed? (y/n): ");
 
   if (answer.toLowerCase() === "y") {
     console.log("Proceeding with magic...");
